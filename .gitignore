@@ -1,3 +1,11 @@
+# Custom
+.DS_Store
+
+dino/
+datasets_local/
+outputs/
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
