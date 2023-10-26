@@ -33,7 +33,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--img-path", type=str, default="data/examples/VOC07_000007.jpg", help="Image path."
+        "--img-path", type=str, default="data/examples/VOC_000030.jpg", help="Image path."
     )
     parser.add_argument(
         "--model-weights", type=str, default="data/weights/decoder_weights.pt",

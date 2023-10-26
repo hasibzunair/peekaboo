@@ -22,7 +22,7 @@ echo -e "import sys\nfrom os.path import dirname, join\nsys.path.insert(0, join(
 
 ## Training
 
-The training is performed on the dataset [DUTS-TR](http://saliencydetection.net/duts/) that should be put in the directory `data`.
+The training is performed on the dataset [DUTS-TR](http://saliencydetection.net/duts/) that should be put in the directory `datasets_local`.
 
 Then the training can be launched using the following command.
 
@@ -66,5 +66,5 @@ We provide here the different command lines in order to repeat all results provi
 Using the following command it is possible to apply and visualize our method on one single image.
 
 ```bash
-python main_visualize.py --img-path /datasets_local/VOC2007/JPEGImages/000030.jpg
+python main_visualize.py --img-path ./datasets_local/ECSSD/images/0009.jpg
 ```
