@@ -22,19 +22,9 @@ echo -e "import sys\nfrom os.path import dirname, join\nsys.path.insert(0, join(
 
 ## Training
 
-In order to train a FOUND model, please start by [installing](#installation-of-found) the framework. If already installed, please run again 
+The training is performed on the dataset [DUTS-TR](http://saliencydetection.net/duts/) that should be put in the directory `data`.
 
-```bash
-# Create conda environment
-conda activate found
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-The training is performed on the dataset [DUTS-TR](http://saliencydetection.net/duts/) that should be put in the directory `data`. 
-
-Then the training can be launched using the following command. Visualizations and training curves can be observed using tensorboard.
+Then the training can be launched using the following command.
 
 ```bash
 export DATASET_DIR=datasets_local # Root directory of all datasets, both training and evaluation
@@ -57,18 +47,13 @@ source evaluate_saliency.sh $MODEL $DATASET_DIR multi
 source evaluate_uod.sh $MODEL $DATASET_DIR
 ```
 
-### Saliency object detection
-
-We evaluate our method *FOUND* for the saliency detection on the datasets 
+Saliency object detection
 
 - [DUT-OMRON](http://saliencydetection.net/dut-omron/): `--dataset-eval DUT-OMRON`
 - [DUTS-TEST](http://saliencydetection.net/duts/): `--dataset-eval DUTS-TEST`
 - [ECSSD](https://www.cse.cuhk.edu.hk/leojia/projects/hsaliency/dataset.html): `--dataset-eval ECSSD`.
 
-### Unsupervised object discovery
-
-In order to evaluate on the unsupervised object discovery task, we follow the framework used in our previous work [LOST](https://github.com/valeoai/LOST).
-The task is implemented for the following datasets, please download the benckmarks and put them in the folder `data/`.
+Unsupervised object discovery
 
 - [VOC07](http://host.robots.ox.ac.uk/pascal/VOC/): `--dataset-eval VOC07`
 - [VOC12](http://host.robots.ox.ac.uk/pascal/VOC/): `--dataset-eval VOC12`
