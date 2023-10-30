@@ -84,8 +84,6 @@ class FoundModel(nn.Module):
         if decoder is None:
             decoder = self.decoder
         preds = decoder(feats)
-
-        # return preds_masked 
         return preds, feats, (w_featmap, h_featmap), att
 
     def make_input_divisible(self, x: torch.Tensor) -> torch.Tensor:

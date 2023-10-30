@@ -56,7 +56,6 @@ def train_model(
     model.decoder.train()
     model.decoder.to("cuda")
 
-    # ----------------------
     # Optimization
     criterion = nn.BCEWithLogitsLoss()
     optimizer = torch.optim.AdamW(
@@ -84,59 +83,70 @@ def train_model(
 
             # get the inputs; data is a list of [inputs, inputs_nonorm, labels, img_paths]
             inputs, input_nonorm, gt_labels, img_path = data
+            
+            # inputs and gt labels
             inputs = inputs.to("cuda")
             gt_labels = gt_labels.to("cuda")
 
             # zero the parameter gradients
             optimizer.zero_grad()
 
-            # Forward steps
+            # Forward step
+            # preds -> masks (50, 1, 28, 28)
+            # shape_f -> feature shape (28, 28)
+            # att -> attention map (50, 6, 28, 28)
             preds, _, shape_f, att = model.forward_step(inputs)
 
-            # -------------------------------------------
-            # Bilateral solver loss
-            # Compute mask detection
+            #import pdb; pdb.set_trace()
+
+            # Binarization
             preds_mask = (sigmoid(preds.detach()) > 0.5).float()
 
             # Apply bilateral solver
+            # masks preds after bs (50, 28, 28)
             preds_mask_bs, _ = batch_apply_bilateral_solver(
                                     data,
                                     preds_mask.detach()
                                 )
-            
-            # Compute loss
+            # flat_preds, flattened from model preds (39200, 1)
             flat_preds = preds.permute(0, 2, 3, 1).reshape(-1, 1)
+
+
+            #### Compute loss (L_s) ####
             preds_bs_loss = config.training["w_bs_loss"] * criterion(
                 flat_preds, preds_mask_bs.reshape(-1).float()[:,None]
             )
+
             writer.add_scalar("Loss/self_bs", preds_bs_loss, n_iter)
             loss = preds_bs_loss
 
-            # -------------------------------------------
-            # Apply bkg loss
             if n_iter < config.training["stop_bkg_loss"]:
                 
                 # Get pseudo_labels used as gt
+                # pseudo masks (50, 28, 28)
                 masks, _ = model.get_bkg_pseudo_labels_batch(
                             att=att,
                             shape_f=shape_f,
                             data=data,
                             shape=preds.shape[-2:],
                         )
-
-                # pseudo_mask vs preds [loss]
                 flat_labels = masks.reshape(-1)
+                
+                #### Compute loss (L_f) ####
                 bkg_loss = criterion(
                     flat_preds, flat_labels.float()[:, None]
                 )
+                
                 writer.add_scalar("Loss/loss", bkg_loss, n_iter)
                 loss += bkg_loss
             
             # Add regularization when bkg loss stopped
             else:
+                #### Compute loss betn soft masks and their binarized versions ####
                 self_loss = criterion(
                             flat_preds, preds_mask.reshape(-1).float()[:,None]
                         )
+                
                 self_loss = config.training["w_self_loss"] * self_loss
                 loss += self_loss
                 writer.add_scalar("Loss/self_loss", self_loss, n_iter)
