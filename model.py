@@ -137,15 +137,19 @@ class FoundModel(nn.Module):
         shape=None,
     ):
 
+        # Compute background mask from attn
         bkg_mask_pred = self.compute_background_batch(
             att, shape_f
-        )
+        ) # (M_b)
+
         # Transform bkg detection to foreground detection
         # Object mask is the inverse of the bkg mask
-        obj_mask = (~bkg_mask_pred.bool()).float()
+        obj_mask = (~bkg_mask_pred.bool()).float() # (M_f)
 
+        # Refine foreground mask
         if use_bilateral_solver:
             pseudo_labels, cnt_bs = batch_apply_bilateral_solver(data, obj_mask, shape)
+            # pseudo_labels is Refined (M_f)
             return pseudo_labels, cnt_bs
         else:
             return obj_mask, 0

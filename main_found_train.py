@@ -91,13 +91,11 @@ def train_model(
             # zero the parameter gradients
             optimizer.zero_grad()
 
-            # Forward step
+            #### Forward step ####
             # preds -> masks (50, 1, 28, 28)
             # shape_f -> feature shape (28, 28)
             # att -> attention map (50, 6, 28, 28)
             preds, _, shape_f, att = model.forward_step(inputs)
-
-            #import pdb; pdb.set_trace()
 
             # Binarization
             preds_mask = (sigmoid(preds.detach()) > 0.5).float()
@@ -108,8 +106,10 @@ def train_model(
                                     data,
                                     preds_mask.detach()
                                 )
+            
             # flat_preds, flattened from model preds (39200, 1)
             flat_preds = preds.permute(0, 2, 3, 1).reshape(-1, 1)
+
 
 
             #### Compute loss (L_s) ####
@@ -120,10 +120,13 @@ def train_model(
             writer.add_scalar("Loss/self_bs", preds_bs_loss, n_iter)
             loss = preds_bs_loss
 
+
+
             if n_iter < config.training["stop_bkg_loss"]:
                 
                 # Get pseudo_labels used as gt
                 # pseudo masks (50, 28, 28)
+                # masks in Refined (M_f)
                 masks, _ = model.get_bkg_pseudo_labels_batch(
                             att=att,
                             shape_f=shape_f,
@@ -131,7 +134,6 @@ def train_model(
                             shape=preds.shape[-2:],
                         )
                 flat_labels = masks.reshape(-1)
-                
                 #### Compute loss (L_f) ####
                 bkg_loss = criterion(
                     flat_preds, flat_labels.float()[:, None]
