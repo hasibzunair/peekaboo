@@ -83,6 +83,7 @@ class FoundModel(nn.Module):
         # Apply decoder
         if decoder is None:
             decoder = self.decoder
+        # M_s
         preds = decoder(feats)
         return preds, feats, (w_featmap, h_featmap), att
 
@@ -138,18 +139,19 @@ class FoundModel(nn.Module):
     ):
 
         # Compute background mask from attn
+        # (M_b)
         bkg_mask_pred = self.compute_background_batch(
             att, shape_f
-        ) # (M_b)
+        )
 
         # Transform bkg detection to foreground detection
         # Object mask is the inverse of the bkg mask
-        obj_mask = (~bkg_mask_pred.bool()).float() # (M_f)
+        # (M_f)
+        obj_mask = (~bkg_mask_pred.bool()).float() 
 
-        # Refine foreground mask
         if use_bilateral_solver:
             pseudo_labels, cnt_bs = batch_apply_bilateral_solver(data, obj_mask, shape)
-            # pseudo_labels is Refined (M_f)
+            # Refined (M_f)
             return pseudo_labels, cnt_bs
         else:
             return obj_mask, 0

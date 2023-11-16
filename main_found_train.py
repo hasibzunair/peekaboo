@@ -92,16 +92,17 @@ def train_model(
             optimizer.zero_grad()
 
             #### Forward step ####
-            # preds -> masks (50, 1, 28, 28)
-            # shape_f -> feature shape (28, 28)
-            # att -> attention map (50, 6, 28, 28)
+            # Goal: General idea is that the model learns to predict a 
+            # smoothed version of the complemnent of the coarse bkg masks and its 
+            # own prediction, so that it quickly converges to refined masks.
+            # M_s
             preds, _, shape_f, att = model.forward_step(inputs)
 
             # Binarization
             preds_mask = (sigmoid(preds.detach()) > 0.5).float()
 
             # Apply bilateral solver
-            # masks preds after bs (50, 28, 28)
+            # M_s_hat
             preds_mask_bs, _ = batch_apply_bilateral_solver(
                                     data,
                                     preds_mask.detach()
@@ -110,9 +111,9 @@ def train_model(
             # flat_preds, flattened from model preds (39200, 1)
             flat_preds = preds.permute(0, 2, 3, 1).reshape(-1, 1)
 
-
-
-            #### Compute loss (L_s) ####
+            #### Compute loss (L_s = (M_s, M_s_hat))  to smooth and refine predictions ####
+            # Goal: Predict a refined version of the prediction itself 
+            # and force quality of mask edges.
             preds_bs_loss = config.training["w_bs_loss"] * criterion(
                 flat_preds, preds_mask_bs.reshape(-1).float()[:,None]
             )
@@ -120,13 +121,9 @@ def train_model(
             writer.add_scalar("Loss/self_bs", preds_bs_loss, n_iter)
             loss = preds_bs_loss
 
-
-
             if n_iter < config.training["stop_bkg_loss"]:
-                
                 # Get pseudo_labels used as gt
-                # pseudo masks (50, 28, 28)
-                # masks in Refined (M_f)
+                # Refined (M_f)
                 masks, _ = model.get_bkg_pseudo_labels_batch(
                             att=att,
                             shape_f=shape_f,
@@ -134,7 +131,10 @@ def train_model(
                             shape=preds.shape[-2:],
                         )
                 flat_labels = masks.reshape(-1)
-                #### Compute loss (L_f) ####
+
+                #### Compute loss L_f = (M_s, Refined (M_f)) to guide predictions towards background masks ####
+                # Goal: Initialize and guide to predict the compliment M_f of the coarse 
+                # bkg mask M_b refined by bilateral solver
                 bkg_loss = criterion(
                     flat_preds, flat_labels.float()[:, None]
                 )
