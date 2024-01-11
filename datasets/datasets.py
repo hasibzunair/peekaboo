@@ -83,8 +83,8 @@ def build_dataset(
     """
 
     if evaluation_type == "saliency":
+        # training data loaded from here
         img_dir, gt_dir = set_dataset_dir(dataset_name, root_dir)
-
         dataset = FoundDataset(
             name=dataset_name,
             img_dir=img_dir,

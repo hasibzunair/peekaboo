@@ -58,6 +58,7 @@ def train_model(
 
     # Optimization
     criterion = nn.BCEWithLogitsLoss()
+    #criterion_mse = nn.MSELoss() # todo: for task similarity constraint
     optimizer = torch.optim.AdamW(
                                   model.decoder.parameters(),
                                   lr=config.training["lr0"]
@@ -82,7 +83,9 @@ def train_model(
         for i, data in tbar:
 
             # get the inputs; data is a list of [inputs, inputs_nonorm, labels, img_paths]
-            inputs, input_nonorm, gt_labels, img_path = data
+            # todo: 
+            # 1. masked input images images
+            inputs, input_nonorm, gt_labels, _ = data
             
             # inputs and gt labels
             inputs = inputs.to("cuda")
@@ -117,9 +120,41 @@ def train_model(
             preds_bs_loss = config.training["w_bs_loss"] * criterion(
                 flat_preds, preds_mask_bs.reshape(-1).float()[:,None]
             )
-
+            print(preds_bs_loss)
             writer.add_scalar("Loss/self_bs", preds_bs_loss, n_iter)
             loss = preds_bs_loss
+
+
+            ### Masked Supervised Learning
+
+            # preds_cb, _, shape_f_cb, att_cb = model.forward_step(inputs)
+            # # Binarization
+            # preds_mask_cb = (sigmoid(preds_cb.detach()) > 0.5).float()
+            # # Apply bilateral solver
+            # preds_mask_cb_bs, _ = batch_apply_bilateral_solver(
+            #                         data,
+            #                         preds_mask_cb.detach()
+            #                     )
+            # flat_preds_cb = preds_cb.permute(0, 2, 3, 1).reshape(-1, 1)
+
+
+            # # Context branch loss
+            # # Masked image prediction with orignal output
+            # preds_bs_cb_loss = config.training["w_bs_loss"] * criterion(
+            #     flat_preds_cb, preds_mask_cb_bs.reshape(-1).float()[:,None]
+            # )
+            # writer.add_scalar("Loss/self_bs_context", preds_bs_cb_loss, n_iter)
+            # loss += preds_bs_cb_loss
+
+
+            # # Task Similarity loss
+            # # Original and masked image predictions
+            # task_sim_loss = config.training["w_bs_loss"] *  criterion(
+            #     flat_preds, flat_preds_cb
+            # )
+            # writer.add_scalar("Loss/self_tasksim", task_sim_loss, n_iter)
+            # loss += task_sim_loss
+            ###
 
             if n_iter < config.training["stop_bkg_loss"]:
                 # Get pseudo_labels used as gt
@@ -138,7 +173,6 @@ def train_model(
                 bkg_loss = criterion(
                     flat_preds, flat_labels.float()[:, None]
                 )
-                
                 writer.add_scalar("Loss/loss", bkg_loss, n_iter)
                 loss += bkg_loss
             
