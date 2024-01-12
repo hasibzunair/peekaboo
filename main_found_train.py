@@ -15,6 +15,8 @@
 import os
 import json
 import argparse
+import matplotlib.pyplot as plt
+import numpy as np
 
 import torch
 import torch.nn as nn
@@ -82,11 +84,22 @@ def train_model(
         tbar = tqdm(enumerate(trainloader, 0), leave=None)
         for i, data in tbar:
 
-            # get the inputs; data is a list of [inputs, inputs_nonorm, labels, img_paths]
-            # todo: 
-            # 1. masked input images images
-            inputs, input_nonorm, gt_labels, _ = data
+            # get the inputs
+            inputs, masked_inputs, scribbles, input_nonorm, masked_input_nonorm, gt_labels, img_paths = data
             
+            #######
+            # For debug
+            # def to_img(ten):
+            #     #ten =(input_nonorm[0].permute(1,2,0).detach().cpu().numpy()+1)/2
+            #     ten =(ten.permute(1,2,0).detach().cpu().numpy())
+            #     ten=(ten*255).astype(np.uint8)
+            #     #ten=cv2.cvtColor(ten,cv2.COLOR_RGB2BGR)
+            #     return ten
+            # import pdb; pdb.set_trace()
+            # im = to_img(input_nonorm[0])
+            # plt.imshow(im); plt.show()
+            #######
+
             # inputs and gt labels
             inputs = inputs.to("cuda")
             gt_labels = gt_labels.to("cuda")

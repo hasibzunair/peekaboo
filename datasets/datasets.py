@@ -4,6 +4,8 @@ Code adapted from SelfMask: https://github.com/NoelShin/selfmask
 """
 
 import os
+import glob
+import random
 from typing import Optional, Tuple, Union
 
 from pycocotools.coco import COCO
@@ -13,6 +15,13 @@ import torchvision
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms as T
+
+try:
+    from torchvision.transforms import InterpolationMode
+
+    BICUBIC = InterpolationMode.BICUBIC
+except ImportError:
+    BICUBIC = Image.BICUBIC
 
 from datasets.utils import unnormalize
 from datasets.geometric_transforms import resize
@@ -28,36 +37,43 @@ def set_dataset_dir(dataset_name, root_dir):
         dataset_dir = os.path.join(root_dir, "ECSSD")
         img_dir = os.path.join(dataset_dir, "images")
         gt_dir = os.path.join(dataset_dir, "ground_truth_mask")
+        scribbles_dir = os.path.join(root_dir, "SCRIBBLES")
 
     elif dataset_name == "DUTS-TEST":
         dataset_dir = os.path.join(root_dir, "DUTS-TE")
         img_dir = os.path.join(dataset_dir, "DUTS-TE-Image")
         gt_dir = os.path.join(dataset_dir, "DUTS-TE-Mask")
+        scribbles_dir = os.path.join(root_dir, "SCRIBBLES")
 
     elif dataset_name == "DUTS-TR":
         dataset_dir = os.path.join(root_dir, "DUTS-TR")
         img_dir = os.path.join(dataset_dir, "DUTS-TR-Image")
         gt_dir = os.path.join(dataset_dir, "DUTS-TR-Mask")
+        scribbles_dir = os.path.join(root_dir, "SCRIBBLES")
 
     elif dataset_name == "DUT-OMRON":
         dataset_dir = os.path.join(root_dir, "DUT-OMRON")
         img_dir = os.path.join(dataset_dir, "DUT-OMRON-image")
         gt_dir = os.path.join(dataset_dir, "pixelwiseGT-new-PNG")
+        scribbles_dir = os.path.join(root_dir, "SCRIBBLES")
 
     elif dataset_name == "VOC07":
         dataset_dir = os.path.join(root_dir, "VOC2007")
         img_dir = dataset_dir
         gt_dir = dataset_dir
+        scribbles_dir = os.path.join(root_dir, "SCRIBBLES")
 
     elif dataset_name == "VOC12":
         dataset_dir = os.path.join(root_dir, "VOC2012")
         img_dir = dataset_dir
         gt_dir = dataset_dir
+        scribbles_dir = os.path.join(root_dir, "SCRIBBLES")
 
     elif dataset_name == "COCO17":
         dataset_dir = os.path.join(root_dir, "COCO")
         img_dir = dataset_dir
         gt_dir = dataset_dir
+        scribbles_dir = os.path.join(root_dir, "SCRIBBLES")
 
     elif dataset_name == "ImageNet":
         dataset_dir = os.path.join(root_dir, "ImageNet")
@@ -67,7 +83,7 @@ def set_dataset_dir(dataset_name, root_dir):
     else:
         raise ValueError(f"Unknown dataset {dataset_name}")
     
-    return img_dir, gt_dir
+    return img_dir, gt_dir, scribbles_dir
 
 
 def build_dataset(
@@ -84,11 +100,12 @@ def build_dataset(
 
     if evaluation_type == "saliency":
         # training data loaded from here
-        img_dir, gt_dir = set_dataset_dir(dataset_name, root_dir)
+        img_dir, gt_dir, scribbles_dir = set_dataset_dir(dataset_name, root_dir)
         dataset = FoundDataset(
             name=dataset_name,
             img_dir=img_dir,
             gt_dir=gt_dir,
+            scribbles_dir=scribbles_dir,
             dataset_set=dataset_set,
             config=config,
             for_eval=for_eval,
@@ -115,6 +132,7 @@ class FoundDataset(Dataset):
         name: str,
         img_dir: str,
         gt_dir: str,
+        scribbles_dir: str,
         dataset_set: Optional[str] = None,
         config=None,
         for_eval:bool = False,
@@ -136,6 +154,7 @@ class FoundDataset(Dataset):
         self.dataset_set = dataset_set
         self.img_dir = img_dir
         self.gt_dir = gt_dir
+        self.scribbles_dir = scribbles_dir
 
         # if VOC dataset
         self.loader = None
@@ -172,10 +191,13 @@ class FoundDataset(Dataset):
 
         # Images
         self.list_images = None
+        self.list_scribbles = None
         if not "VOC" in self.name and not "COCO" in self.name:
             self.list_images = [
                 os.path.join(img_dir, i) for i in sorted(os.listdir(img_dir))
             ]
+            # get path to scribbles, high masks are used, see https://github.com/hasibzunair/msl-recognition
+            self.list_scribbles = sorted(glob.glob(scribbles_dir + "/*.png"))[::-1][:1000]
 
         self.ignore_index = -1
         self.mean = NORMALIZE.mean
@@ -324,6 +346,15 @@ class FoundDataset(Dataset):
         mask_gt = self.center_crop_transforms(mask).squeeze()
         return img_t, mask_gt
 
+    def _preprocess_scribble(self, img, img_size):
+        transform = T.Compose(
+            [
+                T.Resize(img_size, BICUBIC),
+                T.CenterCrop(img_size),
+                T.ToTensor(),
+            ]
+        )
+        return transform(img)
 
     def __getitem__(self, idx, get_mask_gt=True):
         if "VOC" in self.name:
@@ -358,6 +389,9 @@ class FoundDataset(Dataset):
         # For all others
         else:
             img_path = self.list_images[idx]
+            scribble_path = self.list_scribbles[random.randint(0, 950)]
+
+            # read image
             with open(img_path, "rb") as f:
                 img = Image.open(f)
                 img = img.convert("RGB")
@@ -400,7 +434,26 @@ class FoundDataset(Dataset):
             gt_labels = torch.tensor(gt_labels)
             mask_gt = gt_labels
 
-        return img_t, img_init, mask_gt, img_path
+        # read scribble
+        with open(scribble_path, "rb") as f:
+            scribble = Image.open(f).convert("P")
+            scribble = self._preprocess_scribble(scribble, img_t.shape[1])
+            scribble = (scribble > 0).float()  # threshold to [0,1]
+            scribble = torch.max(scribble) - scribble  # inverted scribble
+
+        # create masked input image with scribble when training
+        if not self.for_eval:
+            masked_img_t = img_t * scribble
+            masked_img_init = unnormalize(masked_img_t)
+        else:
+            masked_img_t = img_t
+            masked_img_init = img_init
+
+        # returns the
+        # image, masked image, scribble, 
+        # un-normalized image, un-normalized masked image
+        # ground truth mask, image path
+        return img_t, masked_img_t, scribble, img_init, masked_img_init, mask_gt, img_path
 
     def fullimg_mode(self):
         self.val_full_image = True

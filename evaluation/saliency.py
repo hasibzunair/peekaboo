@@ -167,7 +167,8 @@ def evaluate_saliency(
     metrics_res_bs = {}
     valbar = tqdm(enumerate(valloader, 0), leave=None)
     for i, data in valbar:
-        inputs, _, gt_labels, _ = data
+        #inputs, _, gt_labels, _ = data
+        inputs, _, _, _, _, gt_labels, _ = data
         inputs = inputs.to("cuda")
         gt_labels = gt_labels.to("cuda").float()
 

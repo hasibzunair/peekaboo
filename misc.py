@@ -75,7 +75,9 @@ def batch_apply_bilateral_solver(data,
 
     cnt_bs = 0
     masks_bs = []
-    inputs, init_imgs, gt_labels, img_path = data
+    
+    #inputs, init_imgs, gt_labels, img_path = data
+    inputs, _, _, init_imgs, _, gt_labels, img_path = data
 
     for id in range(inputs.shape[0]):
         _, bs_mask, use_bs = apply_bilateral_solver(
