@@ -60,7 +60,7 @@ def train_model(
 
     # Optimization
     criterion = nn.BCEWithLogitsLoss()
-    #criterion_mse = nn.MSELoss() # todo: for task similarity constraint
+    criterion_mse = nn.MSELoss()
     optimizer = torch.optim.AdamW(
                                   model.decoder.parameters(),
                                   lr=config.training["lr0"]
@@ -102,6 +102,7 @@ def train_model(
 
             # inputs and gt labels
             inputs = inputs.to("cuda")
+            masked_inputs = masked_inputs.to("cuda")
             gt_labels = gt_labels.to("cuda")
 
             # zero the parameter gradients
@@ -130,44 +131,44 @@ def train_model(
             #### Compute loss (L_s = (M_s, M_s_hat))  to smooth and refine predictions ####
             # Goal: Predict a refined version of the prediction itself 
             # and force quality of mask edges.
-            preds_bs_loss = config.training["w_bs_loss"] * criterion(
+            alpha = 0.3 #config.training["w_bs_loss"]
+            preds_bs_loss = alpha * criterion(
                 flat_preds, preds_mask_bs.reshape(-1).float()[:,None]
             )
             print(preds_bs_loss)
-            writer.add_scalar("Loss/self_bs", preds_bs_loss, n_iter)
+            writer.add_scalar("Loss/L_s", preds_bs_loss, n_iter) # self_bs
             loss = preds_bs_loss
 
 
-            ### Masked Supervised Learning
+            ###### Masked Supervised Learning ######
 
-            # preds_cb, _, shape_f_cb, att_cb = model.forward_step(inputs)
-            # # Binarization
-            # preds_mask_cb = (sigmoid(preds_cb.detach()) > 0.5).float()
-            # # Apply bilateral solver
-            # preds_mask_cb_bs, _ = batch_apply_bilateral_solver(
-            #                         data,
-            #                         preds_mask_cb.detach()
-            #                     )
-            # flat_preds_cb = preds_cb.permute(0, 2, 3, 1).reshape(-1, 1)
+            # Context Branch
+            preds_cb, _, shape_f_cb, att_cb = model.forward_step(masked_inputs)
+            preds_mask_cb = (sigmoid(preds_cb.detach()) > 0.5).float()
+            preds_mask_cb_bs, _ = batch_apply_bilateral_solver(
+                                     data,
+                                     preds_mask_cb.detach()
+                                 )
+            flat_preds_cb = preds_cb.permute(0, 2, 3, 1).reshape(-1, 1)
 
+            # Context branch loss
+            beta = 0.2
+            preds_bs_cb_loss = beta * criterion(
+                 flat_preds_cb, preds_mask_cb_bs.reshape(-1).float()[:,None]
+                 )
+            writer.add_scalar("Loss/L_context", preds_bs_cb_loss, n_iter)
+            loss += preds_bs_cb_loss
 
-            # # Context branch loss
-            # # Masked image prediction with orignal output
-            # preds_bs_cb_loss = config.training["w_bs_loss"] * criterion(
-            #     flat_preds_cb, preds_mask_cb_bs.reshape(-1).float()[:,None]
-            # )
-            # writer.add_scalar("Loss/self_bs_context", preds_bs_cb_loss, n_iter)
-            # loss += preds_bs_cb_loss
+            # Task Similarity loss
+            gamma = 0.5
+            task_sim_loss = gamma *  criterion_mse(
+                 flat_preds, flat_preds_cb
+                 )
+            writer.add_scalar("Loss/L_tasksim", task_sim_loss, n_iter)
+            loss += task_sim_loss
 
+            ###### End of Masked Supervised Learning ######
 
-            # # Task Similarity loss
-            # # Original and masked image predictions
-            # task_sim_loss = config.training["w_bs_loss"] *  criterion(
-            #     flat_preds, flat_preds_cb
-            # )
-            # writer.add_scalar("Loss/self_tasksim", task_sim_loss, n_iter)
-            # loss += task_sim_loss
-            ###
 
             if n_iter < config.training["stop_bkg_loss"]:
                 # Get pseudo_labels used as gt
@@ -186,7 +187,7 @@ def train_model(
                 bkg_loss = criterion(
                     flat_preds, flat_labels.float()[:, None]
                 )
-                writer.add_scalar("Loss/loss", bkg_loss, n_iter)
+                writer.add_scalar("Loss/L_f", bkg_loss, n_iter)
                 loss += bkg_loss
             
             # Add regularization when bkg loss stopped
@@ -198,14 +199,21 @@ def train_model(
                 
                 self_loss = config.training["w_self_loss"] * self_loss
                 loss += self_loss
-                writer.add_scalar("Loss/self_loss", self_loss, n_iter)
+                writer.add_scalar("Loss/L_regularization", self_loss, n_iter)
             
             # Visualize predictions in tensorboard
             if n_iter % visualize_freq == 0:
+                # images and predictions
                 grid = torchvision.utils.make_grid(input_nonorm[:5])
                 writer.add_image("training/images", grid, n_iter)
                 p_grid = torchvision.utils.make_grid(preds_mask[:5])
                 writer.add_image("training/preds", p_grid, n_iter)
+
+                # masked images and predictions
+                m_grid = torchvision.utils.make_grid(masked_input_nonorm[:5])
+                writer.add_image("training/masked_images", m_grid, n_iter)
+                mp_grid = torchvision.utils.make_grid(preds_mask_cb[:5])
+                writer.add_image("training/preds", mp_grid, n_iter)
                 
                 # Visualize masks
                 if n_iter < config.training["stop_bkg_loss"]:
@@ -262,7 +270,7 @@ def train_model(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-                description = 'Training of FOUND',
+                description = 'Training of MSL',
                 formatter_class=argparse.ArgumentDefaultsHelpFormatter
             )
     parser.add_argument(
@@ -286,7 +294,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config",
         type=str,
-        default="configs/found_DUTS-TR.yaml",
+        default="configs/msl_DUTS-TR.yaml",
         help="Path of config file."
     )
     parser.add_argument(
@@ -310,7 +318,7 @@ if __name__ == "__main__":
     config = load_config(args.config)
 
     # Exp name
-    exp_name = "FOUND-{}-{}{}".format(
+    exp_name = "MSL-{}-{}{}".format(
                                     config.training["dataset"],
                                     config.model["arch"],
                                     config.model["patch_size"]
@@ -374,4 +382,4 @@ if __name__ == "__main__":
                 visualize_freq=args.visualization_freq,
                 save_model_freq=args.save_model_freq,
             )
-    print(f"\nTraining done, FOUND model saved in {output_dir}.")
+    print(f"\nTraining done, MSL model saved in {output_dir}.")

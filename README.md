@@ -51,7 +51,7 @@ python main_found_train.py --exp-name repro --dataset-dir $DATASET_DIR
 Once the training done, you can launch the evaluation using the scripts `evaluate_saliency.sh` and `evaluate_uod.sh` with the commands:
 
 ```bash
-export MODEL="outputs/repro-FOUND-DUTS-TR-vit_small8/decoder_weights_niter500.pt"
+export MODEL="outputs/msl-FOUND-DUTS-TR-vit_small8/decoder_weights_niter500.pt"
 
 # Evaluation of saliency detection
 source evaluate_saliency.sh $MODEL $DATASET_DIR single
@@ -60,6 +60,8 @@ source evaluate_saliency.sh $MODEL $DATASET_DIR multi
 # Evaluation of unsupervised object discovery
 source evaluate_uod.sh $MODEL $DATASET_DIR
 ```
+
+See tensorboard logs by running: `tensorboard --logdir=outputs`.
 
 ## Demo
 
