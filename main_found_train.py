@@ -14,6 +14,7 @@
 
 import os
 import json
+import random
 import argparse
 import matplotlib.pyplot as plt
 import numpy as np
@@ -131,7 +132,7 @@ def train_model(
             #### Compute loss (L_s = (M_s, M_s_hat))  to smooth and refine predictions ####
             # Goal: Predict a refined version of the prediction itself 
             # and force quality of mask edges.
-            alpha = 0.3 #config.training["w_bs_loss"]
+            alpha = 0.5 #config.training["w_bs_loss"]
             preds_bs_loss = alpha * criterion(
                 flat_preds, preds_mask_bs.reshape(-1).float()[:,None]
             )
@@ -152,7 +153,7 @@ def train_model(
             flat_preds_cb = preds_cb.permute(0, 2, 3, 1).reshape(-1, 1)
 
             # Context branch loss
-            beta = 0.2
+            beta = 0.3
             preds_bs_cb_loss = beta * criterion(
                  flat_preds_cb, preds_mask_cb_bs.reshape(-1).float()[:,None]
                  )
@@ -160,7 +161,7 @@ def train_model(
             loss += preds_bs_cb_loss
 
             # Task Similarity loss
-            gamma = 0.5
+            gamma = 0.2
             task_sim_loss = gamma *  criterion_mse(
                  flat_preds, flat_preds_cb
                  )
@@ -192,7 +193,7 @@ def train_model(
             
             # Add regularization when bkg loss stopped
             else:
-                #### Compute loss betn soft masks and their binarized versions ####
+                ### Compute loss betn soft masks and their binarized versions ####
                 self_loss = criterion(
                             flat_preds, preds_mask.reshape(-1).float()[:,None]
                         )
@@ -213,7 +214,7 @@ def train_model(
                 m_grid = torchvision.utils.make_grid(masked_input_nonorm[:5])
                 writer.add_image("training/masked_images", m_grid, n_iter)
                 mp_grid = torchvision.utils.make_grid(preds_mask_cb[:5])
-                writer.add_image("training/preds", mp_grid, n_iter)
+                writer.add_image("training/masked_preds", mp_grid, n_iter)
                 
                 # Visualize masks
                 if n_iter < config.training["stop_bkg_loss"]:
@@ -269,6 +270,19 @@ def train_model(
 
 
 if __name__ == "__main__":
+
+    ########## Reproducibility ##########
+    # random.seed(0)
+    # np.random.seed(0)
+    # os.environ["PYTHONHASHSEED"] = str(0)
+    # torch.manual_seed(0)
+    # torch.cuda.manual_seed(0)
+    # torch.cuda.manual_seed_all(0)
+    # if torch.cuda.is_available():
+    #     torch.backends.cudnn.deterministic = True
+    # torch.backends.cudnn.benchmark = True
+
+    ########## Get arguments ##########
     parser = argparse.ArgumentParser(
                 description = 'Training of MSL',
                 formatter_class=argparse.ArgumentDefaultsHelpFormatter
