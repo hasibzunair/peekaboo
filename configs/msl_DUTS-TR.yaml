@@ -13,7 +13,7 @@ training:
 
   # Hyper params
   seed: 0
-  max_iter: 500
+  max_iter: 500 # 500 default
   nb_epochs: 3
   batch_size: 50
   lr0: 5e-2

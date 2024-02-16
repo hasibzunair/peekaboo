@@ -132,7 +132,7 @@ def train_model(
             #### Compute loss (L_s = (M_s, M_s_hat))  to smooth and refine predictions ####
             # Goal: Predict a refined version of the prediction itself 
             # and force quality of mask edges.
-            alpha = 0.5 #config.training["w_bs_loss"]
+            alpha = 0.5 # config.training["w_bs_loss"], 1.5
             preds_bs_loss = alpha * criterion(
                 flat_preds, preds_mask_bs.reshape(-1).float()[:,None]
             )
@@ -142,7 +142,6 @@ def train_model(
 
 
             ###### Masked Supervised Learning ######
-
             # Context Branch
             preds_cb, _, shape_f_cb, att_cb = model.forward_step(masked_inputs)
             preds_mask_cb = (sigmoid(preds_cb.detach()) > 0.5).float()
@@ -162,12 +161,11 @@ def train_model(
 
             # Task Similarity loss
             gamma = 0.2
-            task_sim_loss = gamma *  criterion_mse(
+            task_sim_loss = gamma *  criterion(
                  flat_preds, flat_preds_cb
                  )
             writer.add_scalar("Loss/L_tasksim", task_sim_loss, n_iter)
             loss += task_sim_loss
-
             ###### End of Masked Supervised Learning ######
 
 
@@ -197,7 +195,7 @@ def train_model(
                 self_loss = criterion(
                             flat_preds, preds_mask.reshape(-1).float()[:,None]
                         )
-                
+
                 self_loss = config.training["w_self_loss"] * self_loss
                 loss += self_loss
                 writer.add_scalar("Loss/L_regularization", self_loss, n_iter)
@@ -209,7 +207,7 @@ def train_model(
                 writer.add_image("training/images", grid, n_iter)
                 p_grid = torchvision.utils.make_grid(preds_mask[:5])
                 writer.add_image("training/preds", p_grid, n_iter)
-
+                
                 # masked images and predictions
                 m_grid = torchvision.utils.make_grid(masked_input_nonorm[:5])
                 writer.add_image("training/masked_images", m_grid, n_iter)
@@ -217,9 +215,9 @@ def train_model(
                 writer.add_image("training/masked_preds", mp_grid, n_iter)
                 
                 # Visualize masks
-                if n_iter < config.training["stop_bkg_loss"]:
-                    p_grid = torchvision.utils.make_grid(masks[:5].unsqueeze(1))
-                    writer.add_image("training/bkg_masks", p_grid, n_iter)
+                # if n_iter < config.training["stop_bkg_loss"]:
+                #     p_grid = torchvision.utils.make_grid(masks[:5].unsqueeze(1))
+                #     writer.add_image("training/bkg_masks", p_grid, n_iter)
 
             loss.backward()
             optimizer.step()
@@ -320,7 +318,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--visualization-freq",
         type=int,
-        default=50,
+        default=10,
         help="Frequency of prediction visualization in tensorboard."
     )
     
