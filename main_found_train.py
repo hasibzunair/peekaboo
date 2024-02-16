@@ -161,7 +161,7 @@ def train_model(
 
             # Task Similarity loss
             gamma = 0.2
-            task_sim_loss = gamma *  criterion(
+            task_sim_loss = gamma *  criterion_mse(
                  flat_preds, flat_preds_cb
                  )
             writer.add_scalar("Loss/L_tasksim", task_sim_loss, n_iter)
