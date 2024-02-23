@@ -51,7 +51,7 @@ python main_found_train.py --exp-name repro --dataset-dir $DATASET_DIR
 Once the training done, you can launch the evaluation using the scripts `evaluate_saliency.sh` and `evaluate_uod.sh` with the commands:
 
 ```bash
-export MODEL="outputs/msl-FOUND-DUTS-TR-vit_small8/decoder_weights_niter500.pt"
+export MODEL="outputs/base-MSL-DUTS-TR-vit_small8/decoder_weights_niter500.pt"
 
 # Evaluation of saliency detection
 source evaluate_saliency.sh $MODEL $DATASET_DIR single
@@ -83,3 +83,7 @@ python main_visualize.py --img-path ./datasets_local/ECSSD/images/0009.jpg
 **[Nov 10, 2023]** Added project notes section.
 
 </details>
+
+## Acknowledgements
+
+This repository was built on top of https://github.com/valeoai/FOUND.

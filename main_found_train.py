@@ -132,7 +132,7 @@ def train_model(
             #### Compute loss (L_s = (M_s, M_s_hat))  to smooth and refine predictions ####
             # Goal: Predict a refined version of the prediction itself 
             # and force quality of mask edges.
-            alpha = 0.5 # config.training["w_bs_loss"], 1.5
+            alpha = config.training["w_bs_loss"]
             preds_bs_loss = alpha * criterion(
                 flat_preds, preds_mask_bs.reshape(-1).float()[:,None]
             )
@@ -152,20 +152,20 @@ def train_model(
             flat_preds_cb = preds_cb.permute(0, 2, 3, 1).reshape(-1, 1)
 
             # Context branch loss
-            beta = 0.3
+            beta = 1
             preds_bs_cb_loss = beta * criterion(
                  flat_preds_cb, preds_mask_cb_bs.reshape(-1).float()[:,None]
                  )
             writer.add_scalar("Loss/L_context", preds_bs_cb_loss, n_iter)
-            loss += preds_bs_cb_loss
+            #loss += preds_bs_cb_loss
 
             # Task Similarity loss
-            gamma = 0.2
+            gamma = 1
             task_sim_loss = gamma *  criterion_mse(
                  flat_preds, flat_preds_cb
                  )
             writer.add_scalar("Loss/L_tasksim", task_sim_loss, n_iter)
-            loss += task_sim_loss
+            #loss += task_sim_loss
             ###### End of Masked Supervised Learning ######
 
 

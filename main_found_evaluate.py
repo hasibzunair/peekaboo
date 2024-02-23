@@ -66,7 +66,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config",
         type=str,
-        default="configs/found_DUTS-TR.yaml",
+        default="configs/msl_DUTS-TR.yaml",
     )
     args = parser.parse_args()
     print(args.__dict__)
