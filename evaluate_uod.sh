@@ -5,7 +5,7 @@ DATASET_DIR=$2
 for DATASET in VOC07 VOC12 COCO20k
 do
     python main_found_evaluate.py --eval-type uod --dataset-eval $DATASET \
-            --evaluation-mode single --dataset-dir $DATASET_DIR
+            --model-weights $MODEL --evaluation-mode single --dataset-dir $DATASET_DIR
 done
 
 
