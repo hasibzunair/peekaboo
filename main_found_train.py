@@ -133,7 +133,7 @@ def train_model(
             #### Compute loss (L_s = (M_s, M_s_hat))  to smooth and refine predictions ####
             # Goal: Predict a refined version of the prediction itself 
             # and force quality of mask edges.
-            alpha = 1 #config.training["w_bs_loss"]
+            alpha = config.training["w_bs_loss"]
             preds_bs_loss = alpha * criterion(
                 flat_preds, preds_mask_bs.reshape(-1).float()[:,None]
             )
@@ -158,7 +158,7 @@ def train_model(
                  flat_preds_cb, preds_mask_cb_bs.reshape(-1).float()[:,None]
                  )
             writer.add_scalar("Loss/L_context", preds_bs_cb_loss, n_iter)
-            loss += preds_bs_cb_loss
+            #loss += preds_bs_cb_loss
 
             # Task Similarity loss
             gamma = 1
@@ -169,41 +169,41 @@ def train_model(
                  preds_mask_bs.reshape(-1).float()[:,None], preds_mask_cb_bs.reshape(-1).float()[:,None]
                  )
             writer.add_scalar("Loss/L_tasksim", task_sim_loss, n_iter)
-            loss += task_sim_loss
+            #loss += task_sim_loss
             ###### End of Masked Supervised Learning ######
 
 
-            # if n_iter < config.training["stop_bkg_loss"]:
-            #     # Get pseudo_labels used as gt
-            #     # Refined (M_f)
-            #     masks, _ = model.get_bkg_pseudo_labels_batch(
-            #                 att=att,
-            #                 shape_f=shape_f,
-            #                 data=data,
-            #                 shape=preds.shape[-2:],
-            #             )
-            #     flat_labels = masks.reshape(-1)
+            if n_iter < config.training["stop_bkg_loss"]:
+                # Get pseudo_labels used as gt
+                # Refined (M_f)
+                masks, _ = model.get_bkg_pseudo_labels_batch(
+                            att=att,
+                            shape_f=shape_f,
+                            data=data,
+                            shape=preds.shape[-2:],
+                        )
+                flat_labels = masks.reshape(-1)
 
-            #     #### Compute loss L_f = (M_s, Refined (M_f)) to guide predictions towards background masks ####
-            #     # Goal: Initialize and guide to predict the compliment M_f of the coarse 
-            #     # bkg mask M_b refined by bilateral solver
-            #     bkg_loss = criterion(
-            #         flat_preds, flat_labels.float()[:, None]
-            #     )
-            #     writer.add_scalar("Loss/L_f", bkg_loss, n_iter)
-            #     loss += bkg_loss
+                #### Compute loss L_f = (M_s, Refined (M_f)) to guide predictions towards background masks ####
+                # Goal: Initialize and guide to predict the compliment M_f of the coarse 
+                # bkg mask M_b refined by bilateral solver
+                bkg_loss = criterion(
+                    flat_preds, flat_labels.float()[:, None]
+                )
+                writer.add_scalar("Loss/L_f", bkg_loss, n_iter)
+                loss += bkg_loss
             
-            # # Add regularization when bkg loss stopped
-            # else:
+            # Add regularization when bkg loss stopped
+            else:
                 
-            ### Compute loss betn soft masks and their binarized versions ####
-            self_loss = criterion(
-                        flat_preds, preds_mask.reshape(-1).float()[:,None]
-                    )
+                ### Compute loss betn soft masks and their binarized versions ####
+                self_loss = criterion(
+                            flat_preds, preds_mask.reshape(-1).float()[:,None]
+                        )
 
-            self_loss =  self_loss * config.training["w_self_loss"]
-            loss += self_loss
-            writer.add_scalar("Loss/L_regularization", self_loss, n_iter)
+                self_loss =  self_loss * config.training["w_self_loss"]
+                loss += self_loss
+                writer.add_scalar("Loss/L_regularization", self_loss, n_iter)
             
             # Visualize predictions in tensorboard
             if n_iter % visualize_freq == 0:
