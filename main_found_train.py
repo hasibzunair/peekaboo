@@ -1,17 +1,3 @@
-# Copyright 2022 - Valeo Comfort and Driving Assistance - Oriane Siméoni @ valeo.ai
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import os
 import json
 import random
@@ -62,7 +48,6 @@ def train_model(
     # Optimization
     criterion = nn.BCEWithLogitsLoss()
     criterion_mse = nn.MSELoss()
-    criterion_mae = nn.L1Loss()
     optimizer = torch.optim.AdamW(
                                   model.decoder.parameters(),
                                   lr=config.training["lr0"]
@@ -153,7 +138,7 @@ def train_model(
             flat_preds_cb = preds_cb.permute(0, 2, 3, 1).reshape(-1, 1)
 
             # Context branch loss
-            beta = 1
+            beta = 1.0
             preds_bs_cb_loss = beta * criterion(
                  flat_preds_cb, preds_mask_cb_bs.reshape(-1).float()[:,None]
                  )
@@ -161,7 +146,7 @@ def train_model(
             loss += preds_bs_cb_loss
 
             # Task Similarity loss
-            gamma = 1
+            gamma = 1.0
             task_sim_loss = gamma *  criterion_mse(
                  preds_mask_bs.reshape(-1).float()[:,None], preds_mask_cb_bs.reshape(-1).float()[:,None]
                  )
@@ -169,37 +154,13 @@ def train_model(
             loss += task_sim_loss
             ###### End of Masked Supervised Learning ######
 
-
-            # if n_iter < config.training["stop_bkg_loss"]:
-            #     # Get pseudo_labels used as gt
-            #     # Refined (M_f)
-            #     masks, _ = model.get_bkg_pseudo_labels_batch(
-            #                 att=att,
-            #                 shape_f=shape_f,
-            #                 data=data,
-            #                 shape=preds.shape[-2:],
-            #             )
-            #     flat_labels = masks.reshape(-1)
-
-            #     #### Compute loss L_f = (M_s, Refined (M_f)) to guide predictions towards background masks ####
-            #     # Goal: Initialize and guide to predict the compliment M_f of the coarse 
-            #     # bkg mask M_b refined by bilateral solver
-            #     bkg_loss = criterion(
-            #         flat_preds, flat_labels.float()[:, None]
-            #     )
-            #     writer.add_scalar("Loss/L_f", bkg_loss, n_iter)
-            #     loss += bkg_loss
-            
-            # # Add regularization when bkg loss stopped
-            # else:
-
             ### Compute loss betn soft masks and their binarized versions ####
             self_loss = criterion(
                         flat_preds, preds_mask.reshape(-1).float()[:,None]
                     )
 
-            self_loss =  self_loss * 2.0 #config.training["w_self_loss"]
-            #loss += self_loss
+            self_loss =  self_loss * config.training["w_self_loss"]
+            loss += self_loss
             writer.add_scalar("Loss/L_regularization", self_loss, n_iter)
             
             # Visualize predictions in tensorboard
@@ -262,9 +223,12 @@ def train_model(
 
             n_iter += 1
     
+        print(f'##### Number of epoch is {epoch} and n_iter is {n_iter} #####')
+
     # Save model
     model.decoder_save_weights(save_dir, n_iter)
-
+    print("\n----"
+          "\nTraining done.")
     writer.close()
     return model
 

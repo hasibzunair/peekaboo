@@ -13,7 +13,7 @@ training:
 
   # Hyper params
   seed: 0
-  max_iter: 500 # 500 default
+  max_iter: 500
   nb_epochs: 3
   batch_size: 50
   lr0: 5e-2
@@ -21,7 +21,7 @@ training:
   step_lr_gamma: 0.95
   w_bs_loss: 1.5
   w_self_loss: 4.0
-  stop_bkg_loss: 100 # to not use this, set it to 1000, to use, set it to 100
+  stop_bkg_loss: 100
 
   # Augmentations
   crop_size: 224
