@@ -43,7 +43,7 @@ Then the training can be launched using the following command.
 ```bash
 export DATASET_DIR=datasets_local # Root directory of all datasets, both training and evaluation
 
-python main_found_train.py --exp-name repro --dataset-dir $DATASET_DIR
+python main_msl_train.py --exp-name repro --dataset-dir $DATASET_DIR
 ```
 
 ## Eval
@@ -51,7 +51,7 @@ python main_found_train.py --exp-name repro --dataset-dir $DATASET_DIR
 Once the training done, you can launch the evaluation using the scripts `evaluate_saliency.sh` and `evaluate_uod.sh` with the commands:
 
 ```bash
-export MODEL="outputs/exp_name/decoder_weights_niter500.pt"
+export MODEL="outputs/baseline_cb-MSL-DUTS-TR-vit_small8/decoder_weights_niter500.pt"
 
 # Evaluation of saliency detection
 source evaluate_saliency.sh $MODEL $DATASET_DIR single

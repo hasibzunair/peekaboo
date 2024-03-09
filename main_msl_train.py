@@ -176,12 +176,8 @@ def train_model(
                 writer.add_image("training/masked_images", m_grid, n_iter)
                 mp_grid = torchvision.utils.make_grid(preds_mask_cb[:5])
                 writer.add_image("training/masked_preds", mp_grid, n_iter)
-                
-                # Visualize masks
-                # if n_iter < config.training["stop_bkg_loss"]:
-                #     p_grid = torchvision.utils.make_grid(masks[:5].unsqueeze(1))
-                #     writer.add_image("training/bkg_masks", p_grid, n_iter)
 
+            # Update
             loss.backward()
             optimizer.step()
             writer.add_scalar("Loss/total_loss", loss, n_iter)
@@ -235,18 +231,7 @@ def train_model(
 
 if __name__ == "__main__":
 
-    ########## Reproducibility ##########
-    # random.seed(0)
-    # np.random.seed(0)
-    # os.environ["PYTHONHASHSEED"] = str(0)
-    # torch.manual_seed(0)
-    # torch.cuda.manual_seed(0)
-    # torch.cuda.manual_seed_all(0)
-    # if torch.cuda.is_available():
-    #     torch.backends.cudnn.deterministic = True
-    # torch.backends.cudnn.benchmark = True
-
-    ########## Get arguments ##########
+    # Get arguments
     parser = argparse.ArgumentParser(
                 description = 'Training of MSL',
                 formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -288,7 +273,6 @@ if __name__ == "__main__":
         help="Frequency of prediction visualization in tensorboard."
     )
     
-
     args = parser.parse_args()
     print(args.__dict__)
 
@@ -320,7 +304,16 @@ if __name__ == "__main__":
         json.dump(args.__dict__, f)
     
     # ------------------------------------
-    # Set seed
+    # Set seed for reproducibility
+    # random.seed(0)
+    # np.random.seed(0)
+    # os.environ["PYTHONHASHSEED"] = str(0)
+    # torch.manual_seed(0)
+    # torch.cuda.manual_seed(0)
+    # torch.cuda.manual_seed_all(0)
+    # if torch.cuda.is_available():
+    #     torch.backends.cudnn.deterministic = True
+    # torch.backends.cudnn.benchmark = True
     set_seed(config.training["seed"])
 
     # ------------------------------------

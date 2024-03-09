@@ -197,7 +197,8 @@ class FoundDataset(Dataset):
                 os.path.join(img_dir, i) for i in sorted(os.listdir(img_dir))
             ]
             # get path to scribbles, high masks are used, see https://github.com/hasibzunair/msl-recognition
-            self.list_scribbles = sorted(glob.glob(scribbles_dir + "/*.png"))[::-1][:1000]
+            #self.list_scribbles = sorted(glob.glob(scribbles_dir + "/*.png"))[::-1][:1000] # For heavy masking [::-1]
+            self.list_scribbles = sorted(glob.glob(scribbles_dir + "/*.png"))[:1000]
 
         self.ignore_index = -1
         self.mean = NORMALIZE.mean
