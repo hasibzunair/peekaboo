@@ -198,7 +198,6 @@ class FoundDataset(Dataset):
             ]
             # get path to scribbles, high masks are used, see https://github.com/hasibzunair/msl-recognition
             self.list_scribbles = sorted(glob.glob(scribbles_dir + "/*.png"))[::-1][:1000] # For heavy masking [::-1]
-            #self.list_scribbles = sorted(glob.glob(scribbles_dir + "/*.png"))[:1000] # For low masking
 
         self.ignore_index = -1
         self.mean = NORMALIZE.mean
