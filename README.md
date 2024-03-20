@@ -70,13 +70,23 @@ We provide here the different command lines in order to repeat all results provi
 Using the following command it is possible to apply and visualize our method on one single image.
 
 ```bash
+# infer on one images
 python main_visualize.py --img-path ./datasets_local/ECSSD/images/0009.jpg
+# infer on folder of images for saliency detection
+python ./utils/visualize_outputs.py --model-weights outputs/msl_a1.5_b1_g1_reg4-MSL-DUTS-TR-vit_small8/decoder_weights_niter500.pt --img-folder ./datasets_local/ECSSD/images/ --output-dir outputs/visualizations/msl_a1.5_b1_g1_reg4-MSL-DUTS-TR-vit_small8_ECSSD
 ```
 
 ## Project Notes
 
 <details><summary>Click to view</summary>
 <br>
+
+**[Mar 18, 2024]** Infer on image folders.
+
+```python
+# infer on folder of images
+python ./utils/visualize_outputs.py --model-weights outputs/msl_a1.5_b1_g1_reg4-MSL-DUTS-TR-vit_small8/decoder_weights_niter500.pt --img-folder ./datasets_local/DUTS-TR/DUTS-TR-Image/ --output-dir outputs/visualizations/msl_a1.5_b1_g1_reg4-MSL-DUTS-TR-vit_small8_DUTS-TR
+```
 
 **[Nov 10, 2023]** Reproduced FOUND results.
 
