@@ -51,7 +51,7 @@ python main_msl_train.py --exp-name repro --dataset-dir $DATASET_DIR
 Once the training done, you can launch the evaluation using the scripts `evaluate_saliency.sh` and `evaluate_uod.sh` with the commands:
 
 ```bash
-export MODEL="outputs/msl_a1.5_b1_g1_reg4_low-MSL-DUTS-TR-vit_small8/decoder_weights_niter500.pt"
+export MODEL="outputs/msl_a1.5_b0.5_g0.3_reg4-MSL-DUTS-TR-vit_small8/decoder_weights_niter500.pt"
 
 # Evaluation of saliency detection
 source evaluate_saliency.sh $MODEL $DATASET_DIR single
