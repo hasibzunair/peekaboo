@@ -100,7 +100,7 @@ if __name__ == "__main__":
         preds_up_np_3d = np.stack([preds_up_np, preds_up_np, preds_up_np], axis=-1)
 
         #import pdb; pdb.set_trace()
-        # plt.imshow(combined_image); plt.show()
+        #plt.imshow(combined_image); plt.show()
 
         combined_image = cv2.addWeighted(img_np, 0.5, mask_np_3d, 0.5, 0)
         combined_image = cv2.cvtColor(combined_image, cv2.COLOR_BGR2RGB)

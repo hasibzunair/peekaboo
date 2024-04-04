@@ -85,7 +85,7 @@ python ./utils/visualize_outputs.py --model-weights outputs/msl_a1.5_b1_g1_reg4-
 
 ```python
 # infer on folder of images
-python ./utils/visualize_outputs.py --model-weights outputs/msl_a1.5_b1_g1_reg4-MSL-DUTS-TR-vit_small8/decoder_weights_niter500.pt --img-folder ./datasets_local/DUTS-TR/DUTS-TR-Image/ --output-dir outputs/visualizations/msl_a1.5_b1_g1_reg4-MSL-DUTS-TR-vit_small8_DUTS-TR
+python visualize_outputs.py --model-weights outputs/msl_a1.5_b1_g1_reg4-MSL-DUTS-TR-vit_small8/decoder_weights_niter500.pt --img-folder ./datasets_local/DUTS-TR/DUTS-TR-Image/ --output-dir outputs/visualizations/msl_masks
 ```
 
 **[Nov 10, 2023]** Reproduced FOUND results.
