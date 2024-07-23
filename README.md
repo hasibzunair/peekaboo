@@ -18,7 +18,7 @@ We propose a method for unsupervised object localization by learning context-bas
 
 This code requires Python 3.8 and CUDA 11.2. Create and activate the following conda envrionment.
 
-```
+```bash
 conda update conda
 conda env create -f environment.yml
 conda activate peekaboo
@@ -26,14 +26,14 @@ conda activate peekaboo
 
 Or, you can also create a fresh environment and install the project requirements inside that environment by:
 
-```
+```bash
 # create fresh env
 conda create -n peekaboo python=3.8     
 conda activate peekaboo
 # Example of pytorch installation
 pip install torch===1.8.1 torchvision==0.9.1 -f https://download.pytorch.org/whl/torch_stable.html
 pip install pycocotools
-# install reqs
+# install dependencies
 pip install -r requirements.txt
 ```
 
@@ -66,7 +66,7 @@ Download and keep them in `datasets_local` and provide the dataset directory usi
 
 #### Single Object Discovery
 
-In order to evaluate on the single object discovery task, we follow the framework used in [LOST](https://github.com/valeoai/LOST). Download the datasets and put them in the folder `datasets_local`.
+For single object discovery, we follow the framework used in [LOST](https://github.com/valeoai/LOST). Download the datasets and put them in the folder `datasets_local`.
 
 - [VOC07](http://host.robots.ox.ac.uk/pascal/VOC/): `--dataset-eval VOC07`
 - [VOC12](http://host.robots.ox.ac.uk/pascal/VOC/): `--dataset-eval VOC12`
@@ -103,17 +103,19 @@ source evaluate_saliency.sh $MODEL $DATASET_DIR multi
 source evaluate_uod.sh $MODEL $DATASET_DIR
 ```
 
+Since our method is unsupervised, it does not require training on the datasets we evaluate on. 
+
 All experiments are conducted on a single NVIDIA 3080Ti GPU. For additional implementation details and results, please refer to the supplementary materials section in the paper.
 
 ## 3. Pre-trained models
 
-We provide pretrained models on [GitHub Releases](TBA) for reproducibility.
+We provide pretrained models on [GitHub Releases](TBA) for reproducibility. Here are the main results of Peekaboo on single object discovery. For unsupervised saliency detection results, we refer readers to our paper!
 
-|Dataset      | Backbone  |   mAP (%)  |   Download   |
+|Dataset      | Backbone  |   CorLoc (%)  |   Download   |
 |  ---------- | -------   |  ------ |  --------   |
-| VOC2007 | MSL-C  | 86.4 | [download](https://github.com/hasibzunair/msl-recognition/releases/download/v1.0-models/msl_c_voc.pth) |
-| COCO2014 | MSL-C | 96.1 | [download](https://github.com/hasibzunair/msl-recognition/releases/download/v1.0-models/msl_c_coco.pth) |
-| Wider-Attribute | MSL-V | 90.6 | [download](https://github.com/hasibzunair/msl-recognition/releases/download/v1.0-models/msl_v_wider.pth) |
+| VOC07 | ViT-S/8  | 72.7 | [download](https://github.com/hasibzunair/msl-recognition/releases/download/v1.0-models/msl_c_voc.pth) |
+| VOC12 | ViT-S/8 | 75.9 | [download](https://github.com/hasibzunair/msl-recognition/releases/download/v1.0-models/msl_c_coco.pth) |
+| COCO20K | ViT-S/8 | 64.0 | [download](https://github.com/hasibzunair/msl-recognition/releases/download/v1.0-models/msl_v_wider.pth) |
 
 ## 4. Demo
 
