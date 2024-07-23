@@ -47,7 +47,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model-weights",
         type=str,
-        default="data/weights/decoder_weights.pt",
+        default="data/weights/peekaboo_decoder_weights_niter500.pt",
     )
     parser.add_argument(
         "--config",
@@ -114,3 +114,4 @@ if __name__ == "__main__":
         pad_inches=0,
     )
     plt.close()
+    print(f"Saved model prediction.")

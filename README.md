@@ -103,19 +103,19 @@ source evaluate_saliency.sh $MODEL $DATASET_DIR multi
 source evaluate_uod.sh $MODEL $DATASET_DIR
 ```
 
-Since our method is unsupervised, it does not require training on the datasets we evaluate on. 
+Since our method is unsupervised, it does not require training on the datasets we evaluate on.
 
 All experiments are conducted on a single NVIDIA 3080Ti GPU. For additional implementation details and results, please refer to the supplementary materials section in the paper.
 
 ## 3. Pre-trained models
 
-We provide pretrained models on [GitHub Releases](TBA) for reproducibility. Here are the main results of Peekaboo on single object discovery. For unsupervised saliency detection results, we refer readers to our paper!
+We provide pretrained models on [./data/weights/](./data/weights/) for reproducibility. Here are the main results of Peekaboo on single object discovery. For unsupervised saliency detection results, we refer readers to our paper!
 
 |Dataset      | Backbone  |   CorLoc (%)  |   Download   |
 |  ---------- | -------   |  ------ |  --------   |
-| VOC07 | ViT-S/8  | 72.7 | [download](https://github.com/hasibzunair/msl-recognition/releases/download/v1.0-models/msl_c_voc.pth) |
-| VOC12 | ViT-S/8 | 75.9 | [download](https://github.com/hasibzunair/msl-recognition/releases/download/v1.0-models/msl_c_coco.pth) |
-| COCO20K | ViT-S/8 | 64.0 | [download](https://github.com/hasibzunair/msl-recognition/releases/download/v1.0-models/msl_v_wider.pth) |
+| VOC07 | ViT-S/8  | 72.7 | [download](./data/weights/peekaboo_decoder_weights_niter500.pt) |
+| VOC12 | ViT-S/8 | 75.9 | [download](./data/weights/peekaboo_decoder_weights_niter500.pt) |
+| COCO20K | ViT-S/8 | 64.0 | [download](./data/weights/peekaboo_decoder_weights_niter500.pt) |
 
 ## 4. Demo
 
@@ -123,7 +123,7 @@ We provide prediction demos of our models. The following applies and visualizes 
 
 ```bash
 # infer on one images
-python demo.py --img-path ./datasets_local/ECSSD/images/0009.jpg
+python demo.py
 ```
 
 ## 5. Citation
