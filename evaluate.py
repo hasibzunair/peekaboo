@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import argparse
-from model import FoundModel
+from model import PeekabooModel
 from misc import load_config
 from datasets.datasets import build_dataset
 from evaluation.saliency import evaluate_saliency
@@ -21,38 +21,30 @@ from evaluation.uod import evaluation_unsupervised_object_discovery
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description = 'Evaluation of FOUND',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        description="Evaluation of Peekaboo",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "--eval-type",
-        type=str,
-        choices=["saliency", "uod"],
-        help="Evaluation type."
+        "--eval-type", type=str, choices=["saliency", "uod"], help="Evaluation type."
     )
     parser.add_argument(
         "--dataset-eval",
         type=str,
         choices=["ECSSD", "DUT-OMRON", "DUTS-TEST", "VOC07", "VOC12", "COCO20k"],
-        help="Name of evaluation dataset."
+        help="Name of evaluation dataset.",
     )
     parser.add_argument(
-        "--dataset-set-eval",
-        type=str,
-        default=None,
-        help="Set of the dataset."
+        "--dataset-set-eval", type=str, default=None, help="Set of the dataset."
     )
     parser.add_argument(
-        "--apply-bilateral",
-        action="store_true", 
-        help="use bilateral solver."
+        "--apply-bilateral", action="store_true", help="use bilateral solver."
     )
     parser.add_argument(
         "--evaluation-mode",
         type=str,
         default="multi",
         choices=["single", "multi"],
-        help="Type of evaluation."
+        help="Type of evaluation.",
     )
     parser.add_argument(
         "--model-weights",
@@ -66,7 +58,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config",
         type=str,
-        default="configs/msl_DUTS-TR.yaml",
+        default="configs/peekaboo_DUTS-TR.yaml",
     )
     args = parser.parse_args()
     print(args.__dict__)
@@ -74,20 +66,18 @@ if __name__ == "__main__":
     # Configuration
     config = load_config(args.config)
 
-    # ------------------------------------
     # Load the model
-    model = FoundModel(vit_model=config.model["pre_training"],
-                        vit_arch=config.model["arch"],
-                        vit_patch_size=config.model["patch_size"],
-                        enc_type_feats=config.found["feats"],
-                        bkg_type_feats=config.found["feats"],
-                        bkg_th=config.found["bkg_th"])
+    model = PeekabooModel(
+        vit_model=config.model["pre_training"],
+        vit_arch=config.model["arch"],
+        vit_patch_size=config.model["patch_size"],
+        enc_type_feats=config.peekaboo["feats"],
+    )
     # Load weights
     model.decoder_load_weights(args.model_weights)
     model.eval()
     print(f"Model {args.model_weights} loaded correctly.")
 
-    # ------------------------------------
     # Build the validation set
     val_dataset = build_dataset(
         root_dir=args.dataset_dir,
@@ -97,9 +87,8 @@ if __name__ == "__main__":
         evaluation_type=args.eval_type,
     )
     print(f"\nBuilding dataset {val_dataset.name} (#{len(val_dataset)} images)")
-    
-    # ------------------------------------
-    # Training
+
+    # Validation
     print(f"\nStarted evaluation on {val_dataset.name}")
     if args.eval_type == "saliency":
         evaluate_saliency(

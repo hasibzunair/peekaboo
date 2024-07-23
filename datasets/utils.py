@@ -5,6 +5,7 @@ from torchvision import transforms as T
 
 NORMALIZE = T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
 
+
 class GaussianBlur:
     """
     Code borrowed from SelfMask: https://github.com/NoelShin/selfmask

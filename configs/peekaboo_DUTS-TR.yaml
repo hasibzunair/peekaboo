@@ -3,9 +3,8 @@ model:
   patch_size: 8
   pre_training: dino
 
-found:
-  bkg_th: 0.3
-  feats: k
+peekaboo:
+  feats: "k"
 
 training:
   dataset: DUTS-TR
@@ -19,9 +18,6 @@ training:
   lr0: 5e-2
   step_lr_size: 50
   step_lr_gamma: 0.95
-  w_bs_loss: 1.5
-  w_self_loss: 4.0
-  stop_bkg_loss: 100
 
   # Augmentations
   crop_size: 224

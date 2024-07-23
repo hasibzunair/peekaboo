@@ -15,6 +15,7 @@ from datasets.geometric_transforms import (
     random_hflip,
 )
 
+
 def geometric_augmentations(
     image: Image.Image,
     random_scale_range: Optional[Tuple[float, float]] = None,
@@ -43,6 +44,7 @@ def geometric_augmentations(
     if random_hflip_p is not None:
         image, mask = random_hflip(image=image, p=random_hflip_p, mask=mask)
     return image, mask
+
 
 def photometric_augmentations(
     image: Image.Image,

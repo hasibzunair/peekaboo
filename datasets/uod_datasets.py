@@ -36,12 +36,10 @@ transform = pth_transforms.Compose(
     ]
 )
 
+
 class ImageDataset:
-    def __init__(
-        self,
-        image_path
-    ):
-        
+    def __init__(self, image_path):
+
         self.image_path = image_path
         self.name = image_path.split("/")[-1]
 
@@ -60,13 +58,14 @@ class ImageDataset:
     def load_image(self, *args, **kwargs):
         return skimage.io.imread(self.image_path)
 
+
 class UODDataset:
     def __init__(
-        self, 
+        self,
         dataset_name,
         dataset_set,
-        root_dir, 
-        remove_hards:bool = False,
+        root_dir,
+        remove_hards: bool = False,
     ):
         """
         Build the dataloader
@@ -85,10 +84,12 @@ class UODDataset:
         elif dataset_name == "COCO20k":
             self.year = "2014"
             self.root_path = f"{root_dir}/COCO/images/{dataset_set}{self.year}"
-            self.sel20k = 'data/coco_20k_filenames.txt'
-            # new JSON file constructed based on COCO train2014 gt 
+            self.sel20k = "data/coco_20k_filenames.txt"
+            # new JSON file constructed based on COCO train2014 gt
             self.all_annfile = f"{root_dir}/COCO/annotations/instances_train2014.json"
-            self.annfile = f"{root_dir}/COCO/annotations/instances_train2014_sel20k.json"
+            self.annfile = (
+                f"{root_dir}/COCO/annotations/instances_train2014_sel20k.json"
+            )
             if not os.path.exists(self.annfile):
                 select_coco_20k(self.sel20k, self.all_annfile)
         else:
@@ -100,7 +101,7 @@ class UODDataset:
         self.name = f"{self.dataset_name}_{self.set}"
 
         # Build the dataloader
-        #import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
 
         if "VOC" in dataset_name:
             self.dataloader = torchvision.datasets.VOCDetection(
@@ -133,7 +134,9 @@ class UODDataset:
         Load the image corresponding to the im_name
         """
         if "VOC" in self.dataset_name:
-            image = skimage.io.imread(f"{self.root_dir}/VOC{self.year}/JPEGImages/{im_name}")
+            image = skimage.io.imread(
+                f"{self.root_dir}/VOC{self.year}/JPEGImages/{im_name}"
+            )
         elif "COCO" in self.dataset_name:
             im_path = self.path_20k[self.sel_20k.index(im_name)]
             image = skimage.io.imread(f"{self.root_dir}/COCO/images/{im_path}")
@@ -208,7 +211,11 @@ class UODDataset:
         return all_classes
 
     def get_hards(self):
-        hard_path = "datasets/hard_%s_%s_%s.txt" % (self.dataset_name, self.set, self.year)
+        hard_path = "datasets/hard_%s_%s_%s.txt" % (
+            self.dataset_name,
+            self.set,
+            self.year,
+        )
         if os.path.exists(hard_path):
             hards = []
             with open(hard_path, "r") as f:
@@ -331,7 +338,7 @@ def bbox_iou(box1, box2, x1y1x2y2=True, GIoU=False, DIoU=False, CIoU=False, eps=
         )  # convex (smallest enclosing box) width
         ch = torch.max(b1_y2, b2_y2) - torch.min(b1_y1, b2_y1)  # convex height
         if CIoU or DIoU:  # Distance or Complete IoU https://arxiv.org/abs/1911.08287v1
-            c2 = cw ** 2 + ch ** 2 + eps  # convex diagonal squared
+            c2 = cw**2 + ch**2 + eps  # convex diagonal squared
             rho2 = (
                 (b2_x1 + b2_x2 - b1_x1 - b1_x2) ** 2
                 + (b2_y1 + b2_y2 - b1_y1 - b1_y2) ** 2
@@ -341,7 +348,7 @@ def bbox_iou(box1, box2, x1y1x2y2=True, GIoU=False, DIoU=False, CIoU=False, eps=
             elif (
                 CIoU
             ):  # https://github.com/Zzh-tju/DIoU-SSD-pytorch/blob/master/utils/box/box_utils.py#L47
-                v = (4 / math.pi ** 2) * torch.pow(
+                v = (4 / math.pi**2) * torch.pow(
                     torch.atan(w2 / h2) - torch.atan(w1 / h1), 2
                 )
                 with torch.no_grad():
@@ -353,8 +360,9 @@ def bbox_iou(box1, box2, x1y1x2y2=True, GIoU=False, DIoU=False, CIoU=False, eps=
     else:
         return iou  # IoU
 
+
 def select_coco_20k(sel_file, all_annotations_file):
-    print('Building COCO 20k dataset.')
+    print("Building COCO 20k dataset.")
 
     # load all annotations
     with open(all_annotations_file, "r") as f:
@@ -380,7 +388,9 @@ def select_coco_20k(sel_file, all_annotations_file):
     train2014_20k["annotations"] = new_anno
     train2014_20k["categories"] = train2014["categories"]
 
-    with open("datasets_local/COCO/annotations/instances_train2014_sel20k.json", "w") as outfile:
+    with open(
+        "datasets_local/COCO/annotations/instances_train2014_sel20k.json", "w"
+    ) as outfile:
         json.dump(train2014_20k, outfile)
 
-    print('Done.')
+    print("Done.")

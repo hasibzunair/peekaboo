@@ -4,6 +4,7 @@ Code borrowed from SelfMask: https://github.com/NoelShin/selfmask
 
 import torch
 
+
 def compute_mae(pred_mask: torch.Tensor, gt_mask: torch.Tensor) -> torch.Tensor:
     """
     :param pred_mask: (H x W) or (B x H x W) a normalized prediction mask with values in [0, 1]

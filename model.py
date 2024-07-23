@@ -1,3 +1,7 @@
+# Code for Peekaboo
+# Author: Hasib Zunair
+# Modified from https://github.com/valeoai/FOUND, see license below.
+
 # Copyright 2022 - Valeo Comfort and Driving Assistance - Oriane Siméoni @ valeo.ai
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,51 +16,51 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Model code for Peekaboo"""
 
 import os
 import torch
 import torch.nn as nn
 import dino.vision_transformer as vits
 
-from bkg_seg import compute_img_bkg_seg
-from misc import batch_apply_bilateral_solver
 
-class FoundModel(nn.Module):
+class PeekabooModel(nn.Module):
     def __init__(
         self,
         vit_model="dino",
         vit_arch="vit_small",
         vit_patch_size=8,
         enc_type_feats="k",
-        bkg_type_feats="k",
-        bkg_th=0.3
-        ):  
-        
-        super(FoundModel, self).__init__()
+    ):
 
-        # ----------------------
-        # Encoder
+        super(PeekabooModel, self).__init__()
+
+        ########## Encoder ##########
         self.vit_encoder, self.initial_dim, self.hook_features = get_vit_encoder(
             vit_arch, vit_model, vit_patch_size, enc_type_feats
         )
         self.vit_patch_size = vit_patch_size
         self.enc_type_feats = enc_type_feats
 
-        # ----------------------
-        # Background Segmentation
-        self.bkg_type_feats = bkg_type_feats
-        self.bkg_th = bkg_th
-
-        # ----------------------
-        # Define the simple decoder     
+        ########## Decoder ##########
         self.previous_dim = self.initial_dim
         self.decoder = nn.Conv2d(self.previous_dim, 1, (1, 1))
 
-    def forward_step(self, batch, decoder=None, for_eval=False):
+    def _make_input_divisible(self, x: torch.Tensor) -> torch.Tensor:
+        # From selfmask
+        """Pad some pixels to make the input size divisible by the patch size."""
+        B, _, H_0, W_0 = x.shape
+        pad_w = (self.vit_patch_size - W_0 % self.vit_patch_size) % self.vit_patch_size
+        pad_h = (self.vit_patch_size - H_0 % self.vit_patch_size) % self.vit_patch_size
+
+        x = nn.functional.pad(x, (0, pad_w, 0, pad_h), value=0)
+        return x
+
+    def forward(self, batch, decoder=None, for_eval=False):
 
         # Make the image divisible by the patch size
         if for_eval:
-            batch = self.make_input_divisible(batch)
+            batch = self._make_input_divisible(batch)
             _w, _h = batch.shape[-2:]
             _h, _w = _h // self.vit_patch_size, _w // self.vit_patch_size
         else:
@@ -74,7 +78,7 @@ class FoundModel(nn.Module):
         with torch.no_grad():
             # Encoder forward pass
             att = self.vit_encoder.get_last_selfattention(batch)
-            
+
             # Get decoder features
             feats = self.extract_feats(dims=att.shape, type_feats=self.enc_type_feats)
             feats = feats[:, 1:, :, :].reshape(att.shape[0], w_featmap, h_featmap, -1)
@@ -83,78 +87,9 @@ class FoundModel(nn.Module):
         # Apply decoder
         if decoder is None:
             decoder = self.decoder
-        # M_s
-        preds = decoder(feats)
-        return preds, feats, (w_featmap, h_featmap), att
 
-    def make_input_divisible(self, x: torch.Tensor) -> torch.Tensor:
-        # From selfmask
-        """Pad some pixels to make the input size divisible by the patch size."""
-        B, _, H_0, W_0 = x.shape
-        pad_w = (self.vit_patch_size - W_0 % self.vit_patch_size) % self.vit_patch_size
-        pad_h = (self.vit_patch_size - H_0 % self.vit_patch_size) % self.vit_patch_size
-
-        x = nn.functional.pad(x, (0, pad_w, 0, pad_h), value=0)
-        return x
-
-    def compute_background_batch(
-        self,
-        att,
-        shape_f,
-        # mlp_feats = None,
-        ):
-
-        w_f, h_f = shape_f
-
-        # Dimensions
-        nb_im = att.shape[0]  # Batch size
-        nh = att.shape[1]  # Number of heads
-        nb_tokens = att.shape[2]  # Number of tokens
-
-        # Get decoder features
-        feats = self.extract_feats(dims=att.shape,
-                                #    mlp_feats = mlp_feats,
-                                   type_feats=self.bkg_type_feats
-                                   )
-        feats = feats.reshape(nb_im, nb_tokens, -1)
-
-        bkg_mask = compute_img_bkg_seg(
-            att,
-            feats,
-            (w_f,h_f),
-            th_bkg=self.bkg_th,
-            dim=int(self.initial_dim / nh),
-        )
-
-        return bkg_mask
-
-
-    def get_bkg_pseudo_labels_batch(
-        self,
-        att,
-        shape_f,
-        data,
-        use_bilateral_solver = True,
-        shape=None,
-    ):
-
-        # Compute background mask from attn
-        # (M_b)
-        bkg_mask_pred = self.compute_background_batch(
-            att, shape_f
-        )
-
-        # Transform bkg detection to foreground detection
-        # Object mask is the inverse of the bkg mask
-        # (M_f)
-        obj_mask = (~bkg_mask_pred.bool()).float() 
-
-        if use_bilateral_solver:
-            pseudo_labels, cnt_bs = batch_apply_bilateral_solver(data, obj_mask, shape)
-            # Refined (M_f)
-            return pseudo_labels, cnt_bs
-        else:
-            return obj_mask, 0
+        logits = decoder(feats)
+        return logits
 
     @torch.no_grad()
     def decoder_load_weights(self, weights_path):
@@ -167,28 +102,21 @@ class FoundModel(nn.Module):
         self.decoder.eval()
         self.decoder.to("cuda")
 
-
     @torch.no_grad()
     def decoder_save_weights(self, save_dir, n_iter):
         state_dict = {}
         state_dict["decoder"] = self.decoder.state_dict()
-        fname = os.path.join(
-                save_dir, f"decoder_weights_niter{n_iter}.pt"
-                )
+        fname = os.path.join(save_dir, f"decoder_weights_niter{n_iter}.pt")
         torch.save(state_dict, fname)
-        print(f"\n----"
-              f"\nModel saved at {fname}"
-            )
-    
+        print(f"\n----" f"\nModel saved at {fname}")
+
     @torch.no_grad()
     def extract_feats(self, dims, type_feats="k"):
 
         nb_im, nh, nb_tokens, _ = dims
         qkv = (
             self.hook_features["qkv"]
-            .reshape(
-                nb_im, nb_tokens, 3, nh, -1 // nh
-            )  # 3 corresponding to |qkv|
+            .reshape(nb_im, nb_tokens, 3, nh, -1 // nh)  # 3 corresponding to |qkv|
             .permute(2, 0, 3, 1, 4)
         )
 

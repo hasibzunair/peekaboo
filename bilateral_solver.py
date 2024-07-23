@@ -163,7 +163,7 @@ def bilateral_solver_output(
     sigma_spatial=24,
     sigma_luma=4,
     sigma_chroma=4,
-    get_all_cc=False
+    get_all_cc=False,
 ):
     if img is None:
         reference = np.array(Image.open(img_pth).convert("RGB"))
@@ -191,7 +191,7 @@ def bilateral_solver_output(
     t = target.reshape(-1, 1).astype(np.double)
     c = confidence.reshape(-1, 1).astype(np.double)
 
-    ## output solver, which is a soft value
+    # output solver, which is a soft value
     output_solver = BilateralSolver(grid, bs_params).solve(t, c).reshape((h, w))
 
     binary_solver = ndimage.binary_fill_holes(output_solver > 0.5)
@@ -204,7 +204,11 @@ def bilateral_solver_output(
         # Remove known bakground
         pixel_descending_order = pixel_order[::-1]
         # Get all CC expect biggest one, may consider it as background, try and change here
-        binary_solver = (labeled[None,:,:] == pixel_descending_order[1:,None,None]).astype(int).sum(0)
+        binary_solver = (
+            (labeled[None, :, :] == pixel_descending_order[1:, None, None])
+            .astype(int)
+            .sum(0)
+        )
     else:
         try:
             binary_solver = labeled == pixel_order[-2]

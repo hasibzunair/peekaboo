@@ -14,6 +14,7 @@ from tqdm import tqdm
 
 VOCDetectionMetadataType = Dict[str, Dict[str, Union[str, Dict[str, str], List[str]]]]
 
+
 def get_voc_detection_gt(
     metadata: VOCDetectionMetadataType, remove_hards: bool = False
 ) -> Tuple[np.array, List[str]]:
@@ -24,8 +25,7 @@ def get_voc_detection_gt(
     gt_clss = []
     for object in range(nb_obj):
         if remove_hards and (
-            objects[object]["truncated"] == "1"
-            or objects[object]["difficult"] == "1"
+            objects[object]["truncated"] == "1" or objects[object]["difficult"] == "1"
         ):
             continue
 
@@ -49,12 +49,14 @@ def get_voc_detection_gt(
 
     return np.asarray(gt_bbxs), gt_clss
 
+
 def create_gt_masks_if_voc(labels: PngImagePlugin.PngImageFile) -> Image.Image:
     mask = np.array(labels)
     mask_gt = (mask > 0).astype(float)
     mask_gt = np.where(mask_gt != 0.0, 255, mask_gt)
     mask_gt = Image.fromarray(np.uint8(mask_gt))
     return mask_gt
+
 
 def create_VOC_loader(img_dir, dataset_set, evaluation_type):
     year = img_dir[-4:]

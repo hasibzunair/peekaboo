@@ -1,6 +1,9 @@
+# Code for Peekaboo
+# Author: Hasib Zunair
+# Modified from https://github.com/NoelShin/selfmask
+
 """
 Dataset functions for applying Normalized Cut.
-Code adapted from SelfMask: https://github.com/NoelShin/selfmask
 """
 
 import os
@@ -31,6 +34,7 @@ from datasets.augmentations import geometric_augmentations, photometric_augmenta
 from datasets.uod_datasets import UODDataset
 
 NORMALIZE = T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+
 
 def set_dataset_dir(dataset_name, root_dir):
     if dataset_name == "ECSSD":
@@ -82,7 +86,7 @@ def set_dataset_dir(dataset_name, root_dir):
 
     else:
         raise ValueError(f"Unknown dataset {dataset_name}")
-    
+
     return img_dir, gt_dir, scribbles_dir
 
 
@@ -91,8 +95,8 @@ def build_dataset(
     dataset_name: str,
     dataset_set: Optional[str] = None,
     for_eval: bool = False,
-    config=None, 
-    evaluation_type="saliency", # uod, 
+    config=None,
+    evaluation_type="saliency",  # uod,
 ):
     """
     Build dataset
@@ -101,7 +105,7 @@ def build_dataset(
     if evaluation_type == "saliency":
         # training data loaded from here
         img_dir, gt_dir, scribbles_dir = set_dataset_dir(dataset_name, root_dir)
-        dataset = FoundDataset(
+        dataset = PeekabooDataset(
             name=dataset_name,
             img_dir=img_dir,
             gt_dir=gt_dir,
@@ -126,7 +130,7 @@ def build_dataset(
     return dataset
 
 
-class FoundDataset(Dataset):
+class PeekabooDataset(Dataset):
     def __init__(
         self,
         name: str,
@@ -135,8 +139,8 @@ class FoundDataset(Dataset):
         scribbles_dir: str,
         dataset_set: Optional[str] = None,
         config=None,
-        for_eval:bool = False,
-        evaluation_type:str = "saliency",
+        for_eval: bool = False,
+        evaluation_type: str = "saliency",
     ) -> None:
         """
         Args:
@@ -145,7 +149,7 @@ class FoundDataset(Dataset):
                 on a sample.
         """
         self.for_eval = for_eval
-        self.use_aug =  not for_eval
+        self.use_aug = not for_eval
         self.evaluation_type = evaluation_type
 
         assert evaluation_type in ["saliency"]
@@ -161,7 +165,7 @@ class FoundDataset(Dataset):
         self.cocoGt = None
 
         self.config = config
-        
+
         if "VOC" in self.name:
             self.loader = create_VOC_loader(self.img_dir, dataset_set, evaluation_type)
 
@@ -175,16 +179,16 @@ class FoundDataset(Dataset):
             )
 
         elif "COCO" in self.name:
-            year = int("20"+self.name[-2:])
-            annFile=f'/datasets_local/COCO/annotations/instances_{dataset_set}{str(year)}.json'
-            self.cocoGt=COCO(annFile)
+            year = int("20" + self.name[-2:])
+            annFile = f"/datasets_local/COCO/annotations/instances_{dataset_set}{str(year)}.json"
+            self.cocoGt = COCO(annFile)
             self.img_ids = list(sorted(self.cocoGt.getImgIds()))
-            self.img_dir = f'/datasets_local/COCO/images/{dataset_set}{str(year)}/'
+            self.img_dir = f"/datasets_local/COCO/images/{dataset_set}{str(year)}/"
 
         # Transformations
         if self.for_eval:
-            full_img_transform, no_norm_full_img_transform = self.get_init_transformation(
-                isVOC="VOC" in name
+            full_img_transform, no_norm_full_img_transform = (
+                self.get_init_transformation(isVOC="VOC" in name)
             )
             self.full_img_transform = full_img_transform
             self.no_norm_full_img_transform = no_norm_full_img_transform
@@ -197,7 +201,9 @@ class FoundDataset(Dataset):
                 os.path.join(img_dir, i) for i in sorted(os.listdir(img_dir))
             ]
             # get path to scribbles, high masks are used, see https://github.com/hasibzunair/msl-recognition
-            self.list_scribbles = sorted(glob.glob(scribbles_dir + "/*.png"))[::-1][:1000] # For heavy masking [::-1]
+            self.list_scribbles = sorted(glob.glob(scribbles_dir + "/*.png"))[::-1][
+                :1000
+            ]  # For heavy masking [::-1]
 
         self.ignore_index = -1
         self.mean = NORMALIZE.mean
@@ -208,10 +214,11 @@ class FoundDataset(Dataset):
         if config is not None and self.use_aug:
             self._set_aug(config)
 
-
     def get_init_transformation(self, isVOC: bool = False):
         if isVOC:
-            t = T.Compose([T.PILToTensor(), T.ConvertImageDtype(torch.float), NORMALIZE])
+            t = T.Compose(
+                [T.PILToTensor(), T.ConvertImageDtype(torch.float), NORMALIZE]
+            )
             t_nonorm = T.Compose([T.PILToTensor(), T.ConvertImageDtype(torch.float)])
             return t, t_nonorm
 
@@ -224,9 +231,9 @@ class FoundDataset(Dataset):
         """
         Set augmentation based on config.
         """
-         
+
         photometric_aug = config.training["photometric_aug"]
-        
+
         self.cropping_strategy = config.training["cropping_strategy"]
         if self.cropping_strategy == "center_crop":
             self.use_aug = False  # default strategy, not considered to be a data aug
@@ -261,7 +268,7 @@ class FoundDataset(Dataset):
         ignore_index: Optional[int] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Prepare data in a proper form for either training (data augmentation) or validation."""
-        
+
         # resize to base size
         image = resize(
             image,
@@ -313,7 +320,7 @@ class FoundDataset(Dataset):
                 mask,
                 size=(self.crop_size, self.crop_size),
                 interpolation="bilinear",
-            ) 
+            )
 
         image = photometric_augmentations(
             image,
@@ -360,9 +367,7 @@ class FoundDataset(Dataset):
         if "VOC" in self.name:
             img, gt_labels = self.loader[idx]
             if self.evaluation_type == "uod":
-                gt_labels, _ = get_voc_detection_gt(
-                    gt_labels, remove_hards=False
-                )
+                gt_labels, _ = get_voc_detection_gt(gt_labels, remove_hards=False)
             elif self.evaluation_type == "saliency":
                 mask_gt = create_gt_masks_if_voc(gt_labels)
             img_path = self.loader.images[idx]
@@ -378,9 +383,9 @@ class FoundDataset(Dataset):
             img_id = self.img_ids[idx]
 
             path = self.cocoGt.loadImgs(img_id)[0]["file_name"]
-            img =  Image.open(os.path.join(self.img_dir, path)).convert("RGB")
+            img = Image.open(os.path.join(self.img_dir, path)).convert("RGB")
             _ = self.cocoGt.loadAnns(self.cocoGt.getAnnIds(id))
-            img_path = self.img_ids[idx] # What matters most is the id for eval
+            img_path = self.img_ids[idx]  # What matters most is the id for eval
 
             # empty mask since no gt mask, only class label
             zeros = np.zeros(np.array(img).shape[:2])
@@ -450,10 +455,18 @@ class FoundDataset(Dataset):
             masked_img_init = img_init
 
         # returns the
-        # image, masked image, scribble, 
+        # image, masked image, scribble,
         # un-normalized image, un-normalized masked image
         # ground truth mask, image path
-        return img_t, masked_img_t, scribble, img_init, masked_img_init, mask_gt, img_path
+        return (
+            img_t,
+            masked_img_t,
+            scribble,
+            img_init,
+            masked_img_init,
+            mask_gt,
+            img_path,
+        )
 
     def fullimg_mode(self):
         self.val_full_image = True

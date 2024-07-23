@@ -31,12 +31,7 @@ from misc import batch_apply_bilateral_solver
 
 
 @torch.no_grad()
-def write_metric_tf(
-    writer,
-    metrics,
-    n_iter = -1,
-    name = ""
-):
+def write_metric_tf(writer, metrics, n_iter=-1, name=""):
     writer.add_scalar(
         f"Validation/{name}iou_pred",
         metrics["ious"].avg,
@@ -53,13 +48,9 @@ def write_metric_tf(
         n_iter,
     )
 
+
 @torch.no_grad()
-def eval_batch(
-    batch_gt_masks, 
-    batch_pred_masks,
-    metrics_res={},
-    reset=False
-):
+def eval_batch(batch_gt_masks, batch_pred_masks, metrics_res={}, reset=False):
     """
     Evaluation code adapted from SelfMask: https://github.com/NoelShin/selfmask
     """
@@ -90,9 +81,7 @@ def eval_batch(
         metrics_res["s_measures"].reset()
 
     # iterate over batch dimension
-    for _, (pred_mask, gt_mask) in enumerate(
-        zip(batch_pred_masks, batch_gt_masks)
-    ):
+    for _, (pred_mask, gt_mask) in enumerate(zip(batch_pred_masks, batch_gt_masks)):
         assert pred_mask.shape == gt_mask.shape, f"{pred_mask.shape} != {gt_mask.shape}"
         assert len(pred_mask.shape) == len(gt_mask.shape) == 2
         # Compute
@@ -136,6 +125,7 @@ def eval_batch(
 
     return results, metrics_res
 
+
 def evaluate_saliency(
     dataset,
     model,
@@ -146,7 +136,7 @@ def evaluate_saliency(
     im_fullsize=True,
     method="pred",  # can also be "bkg",
     apply_weights: bool = True,
-    evaluation_mode: str = 'single', # choices are ["single", "multi"]
+    evaluation_mode: str = "single",  # choices are ["single", "multi"]
 ):
 
     if im_fullsize:
@@ -155,10 +145,7 @@ def evaluate_saliency(
         batch_size = 1
 
     valloader = torch.utils.data.DataLoader(
-        dataset,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=2
+        dataset, batch_size=batch_size, shuffle=False, num_workers=2
     )
 
     sigmoid = nn.Sigmoid()
@@ -167,49 +154,26 @@ def evaluate_saliency(
     metrics_res_bs = {}
     valbar = tqdm(enumerate(valloader, 0), leave=None)
     for i, data in valbar:
-        #inputs, _, gt_labels, _ = data
         inputs, _, _, _, _, gt_labels, _ = data
         inputs = inputs.to("cuda")
         gt_labels = gt_labels.to("cuda").float()
 
         # Forward step
         with torch.no_grad():
-            preds, _, shape_f, att = model.forward_step(
-                                        inputs, for_eval=True
-                                    )
+            preds = model(inputs, for_eval=True)
 
-        if method == "pred":
-            h, w = gt_labels.shape[-2:]
-            preds_up = F.interpolate(
-                preds, scale_factor=model.vit_patch_size, mode="bilinear", align_corners=False
-            )[..., :h, :w]
-            soft_preds = sigmoid(preds_up.detach()).squeeze(0)
-            preds_up = (
-                (sigmoid(preds_up.detach()) > 0.5).squeeze(0).float()
-            )
-
-        elif method == "bkg":
-            bkg_mask_pred = model.compute_background_batch(
-                att, shape_f,
-                apply_weights=apply_weights,
-            )
-            # Transform bkg detection to foreground detection
-            obj_mask = (
-                ~bkg_mask_pred.bool()
-            ).float()  # Obj labels is inverse of bkg
-
-            # Fit predictions to image size
-            preds_up = F.interpolate(
-                obj_mask.unsqueeze(1),
-                gt_labels.shape[-2:],
-                mode="bilinear",
-                align_corners=False,
-            )
-            preds_up = (preds_up > 0.5).float()
-            soft_preds = preds_up  # not soft actually
+        h, w = gt_labels.shape[-2:]
+        preds_up = F.interpolate(
+            preds,
+            scale_factor=model.vit_patch_size,
+            mode="bilinear",
+            align_corners=False,
+        )[..., :h, :w]
+        soft_preds = sigmoid(preds_up.detach()).squeeze(0)
+        preds_up = (sigmoid(preds_up.detach()) > 0.5).squeeze(0).float()
 
         reset = True if i == 0 else False
-        if evaluation_mode == 'single':
+        if evaluation_mode == "single":
             labeled, nr_objects = ndimage.label(preds_up.squeeze().cpu().numpy())
             if nr_objects == 0:
                 preds_up_one_cc = preds_up.squeeze()
@@ -229,11 +193,12 @@ def evaluate_saliency(
                             + cc[:, None, :, :].cuda()
                         )
                         > 1
-                    ).sum(-1).sum(-1).argmax()
+                    )
+                    .sum(-1)
+                    .sum(-1)
+                    .argmax()
                 )
-                pixel_order = np.delete(
-                                pixel_order, int(cc_background.cpu().numpy())
-                            )
+                pixel_order = np.delete(pixel_order, int(cc_background.cpu().numpy()))
 
                 preds_up_one_cc = torch.Tensor(labeled == pixel_order[-1]).cuda()
 
@@ -244,41 +209,44 @@ def evaluate_saliency(
                 reset=reset,
             )
 
-        elif evaluation_mode == 'multi':
+        elif evaluation_mode == "multi":
             # Eval without bilateral solver
             _, metrics_res = eval_batch(
-                                gt_labels,
-                                soft_preds.unsqueeze(0) if len(soft_preds.shape) == 2 else soft_preds,
-                                metrics_res=metrics_res,
-                                reset=reset,
-                            )  # soft preds needed for F beta measure
+                gt_labels,
+                soft_preds.unsqueeze(0) if len(soft_preds.shape) == 2 else soft_preds,
+                metrics_res=metrics_res,
+                reset=reset,
+            )  # soft preds needed for F beta measure
 
         # Apply bilateral solver
         preds_bs = None
         if apply_bilateral:
-            get_all_cc = True if evaluation_mode == 'multi' else False
-            preds_bs, _ = batch_apply_bilateral_solver(data,
-                            preds_up.detach(),
-                            get_all_cc = get_all_cc
-                        )
+            get_all_cc = True if evaluation_mode == "multi" else False
+            preds_bs, _ = batch_apply_bilateral_solver(
+                data, preds_up.detach(), get_all_cc=get_all_cc
+            )
 
             _, metrics_res_bs = eval_batch(
                 gt_labels,
-                preds_bs[None,:,:].float(),
+                preds_bs[None, :, :].float(),
                 metrics_res=metrics_res_bs,
-                reset=reset
+                reset=reset,
             )
 
-        bar_str = f"{dataset.name} | {evaluation_mode} mode | " \
-                  f"F-max {metrics_res['f_maxs'].avg:.3f} " \
-                  f"IoU {metrics_res['ious'].avg:.3f}, " \
-                  f"PA {metrics_res['pixel_accs'].avg:.3f}"
-        
+        bar_str = (
+            f"{dataset.name} | {evaluation_mode} mode | "
+            f"F-max {metrics_res['f_maxs'].avg:.3f} "
+            f"IoU {metrics_res['ious'].avg:.3f}, "
+            f"PA {metrics_res['pixel_accs'].avg:.3f}"
+        )
+
         if apply_bilateral:
-            bar_str += f" | with bilateral solver: " \
-                       f"F-max {metrics_res_bs['f_maxs'].avg:.3f}, " \
-                       f"IoU {metrics_res_bs['ious'].avg:.3f}, " \
-                       f"PA. {metrics_res_bs['pixel_accs'].avg:.3f}"
+            bar_str += (
+                f" | with bilateral solver: "
+                f"F-max {metrics_res_bs['f_maxs'].avg:.3f}, "
+                f"IoU {metrics_res_bs['ious'].avg:.3f}, "
+                f"PA. {metrics_res_bs['pixel_accs'].avg:.3f}"
+            )
 
         valbar.set_description(bar_str)
 
@@ -288,16 +256,16 @@ def evaluate_saliency(
             writer,
             metrics_res,
             n_iter=n_iter,
-            name=f"{dataset.name}_{evaluation_mode}_"
+            name=f"{dataset.name}_{evaluation_mode}_",
         )
-        
+
         if apply_bilateral:
-                write_metric_tf(
-                    writer,
-                    metrics_res_bs,
-                    n_iter=n_iter,
-                    name=f"{dataset.name}_{evaluation_mode}-BS_"
-                )
+            write_metric_tf(
+                writer,
+                metrics_res_bs,
+                n_iter=n_iter,
+                name=f"{dataset.name}_{evaluation_mode}-BS_",
+            )
 
     # Go back to original transformation
     if im_fullsize:

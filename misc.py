@@ -1,3 +1,23 @@
+# Code for Peekaboo
+# Author: Hasib Zunair
+# Modified from https://github.com/valeoai/FOUND, see license below.
+
+# Copyright 2022 - Valeo Comfort and Driving Assistance - Oriane Siméoni @ valeo.ai
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Helpers functions"""
+
 import re
 import os
 import cv2
@@ -18,28 +38,35 @@ from bilateral_solver import bilateral_solver_output
 
 loader = yaml.SafeLoader
 loader.add_implicit_resolver(
-    u'tag:yaml.org,2002:float',
-    re.compile(u'''^(?:
+    "tag:yaml.org,2002:float",
+    re.compile(
+        """^(?:
      [-+]?(?:[0-9][0-9_]*)\\.[0-9_]*(?:[eE][-+]?[0-9]+)?
     |[-+]?(?:[0-9][0-9_]*)(?:[eE][-+]?[0-9]+)
     |\\.[0-9_]+(?:[eE][-+][0-9]+)?
     |[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\\.[0-9_]*
     |[-+]?\\.(?:inf|Inf|INF)
-    |\\.(?:nan|NaN|NAN))$''', re.X),
-    list(u'-+0123456789.'))
+    |\\.(?:nan|NaN|NAN))$""",
+        re.X,
+    ),
+    list("-+0123456789."),
+)
+
 
 class Struct:
-    def __init__(self, **entries): 
+    def __init__(self, **entries):
         self.__dict__.update(entries)
 
+
 def load_config(config_file):
-    with open(config_file, errors='ignore') as f:
+    with open(config_file, errors="ignore") as f:
         # conf = yaml.safe_load(f)  # load config
         conf = yaml.load(f, Loader=loader)
-    print('hyperparameters: ' + ', '.join(f'{k}={v}' for k, v in conf.items()))
-        
-    #TODO yaml_save(save_dir / 'config.yaml', conf)
+    print("hyperparameters: " + ", ".join(f"{k}={v}" for k, v in conf.items()))
+
+    # TODO yaml_save(save_dir / 'config.yaml', conf)
     return Struct(**conf)
+
 
 def set_seed(seed: int) -> None:
     """
@@ -56,8 +83,12 @@ def set_seed(seed: int) -> None:
 
     # torch
     torch.manual_seed(seed)
+    torch.cuda.manual_seed(0)
     torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
+    if torch.cuda.is_available():
+        torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = True
+
 
 def IoU(mask1, mask2):
     """
@@ -68,15 +99,13 @@ def IoU(mask1, mask2):
     union = torch.sum(mask1 + mask2, dim=[-1, -2]).squeeze()
     return (intersection.to(torch.float) / union).mean().item()
 
-def batch_apply_bilateral_solver(data,
-                                 masks,
-                                 get_all_cc=True,
-                                 shape=None):
+
+def batch_apply_bilateral_solver(data, masks, get_all_cc=True, shape=None):
 
     cnt_bs = 0
     masks_bs = []
-    
-    #inputs, init_imgs, gt_labels, img_path = data
+
+    # inputs, init_imgs, gt_labels, img_path = data
     inputs, _, _, init_imgs, _, gt_labels, img_path = data
 
     for id in range(inputs.shape[0]):
@@ -106,7 +135,7 @@ def batch_apply_bilateral_solver(data,
         else:
             # Use initial mask
             masks_bs.append(masks[id].cuda().squeeze()[None, :, :])
-    
+
     return torch.cat(masks_bs).squeeze(), cnt_bs
 
 
@@ -157,6 +186,7 @@ def apply_bilateral_solver(
         use_bs = 1
 
     return resized_mask, sel_obj_mask, use_bs
+
 
 def get_bbox_from_segmentation_labels(
     segmenter_predictions: torch.Tensor,

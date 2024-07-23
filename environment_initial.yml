@@ -1,5 +1,5 @@
 # Environment used to reporduce results
-name: uobjl
+name: peekaboo
 channels:
   - defaults
   - conda-forge

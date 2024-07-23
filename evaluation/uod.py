@@ -29,11 +29,11 @@ from misc import bbox_iou, get_bbox_from_segmentation_labels
 def evaluation_unsupervised_object_discovery(
     dataset,
     model,
-    evaluation_mode: str = 'single', # choices are ["single", "multi"]
-    output_dir:str = "outputs",
-    no_hards:bool = False,
+    evaluation_mode: str = "single",  # choices are ["single", "multi"]
+    output_dir: str = "outputs",
+    no_hards: bool = False,
 ):
-    
+
     assert evaluation_mode == "single"
 
     sigmoid = nn.Sigmoid()
@@ -71,10 +71,10 @@ def evaluation_unsupervised_object_discovery(
 
         # # Move to gpu
         img = img.cuda(non_blocking=True)
-        
+
         # Size for transformers
-        w_featmap = img.shape[-2] // model.vit_patch_size
-        h_featmap = img.shape[-1] // model.vit_patch_size
+        # w_featmap = img.shape[-2] // model.vit_patch_size
+        # h_featmap = img.shape[-1] // model.vit_patch_size
 
         # ------------ GROUND-TRUTH -------------------------------------------
         gt_bbxs, gt_cls = dataset.extract_gt(inp[1], im_name)
@@ -85,7 +85,7 @@ def evaluation_unsupervised_object_discovery(
             if gt_bbxs.shape[0] == 0 and no_hards:
                 continue
 
-        outputs = model.forward_step(img[None, :, :, :])
+        outputs = model(img[None, :, :, :])
         preds = (sigmoid(outputs[0].detach()) > 0.5).float().squeeze().cpu().numpy()
 
         # get bbox
@@ -99,20 +99,19 @@ def evaluation_unsupervised_object_discovery(
         # Save the prediction
         preds_dict[im_name] = pred
 
-
         # Compare prediction to GT boxes
         ious = bbox_iou(torch.from_numpy(pred), torch.from_numpy(gt_bbxs))
 
         if torch.any(ious >= 0.5):
             corloc[im_id] = 1
-       
+
         cnt += 1
         if cnt % 50 == 0:
-            pbar.set_description(f"Found {int(np.sum(corloc))}/{cnt}")
+            pbar.set_description(f"Peekaboo {int(np.sum(corloc))}/{cnt}")
 
     # Evaluate
     print(f"corloc: {100*np.sum(corloc)/cnt:.2f} ({int(np.sum(corloc))}/{cnt})")
-    result_file = os.path.join(output_dir, 'uod_results.txt')
-    with open(result_file, 'w') as f:
-        f.write('corloc,%.1f,,\n'%(100*np.sum(corloc)/cnt))
-    print('File saved at %s'%result_file)
+    result_file = os.path.join(output_dir, "uod_results.txt")
+    with open(result_file, "w") as f:
+        f.write("corloc,%.1f,,\n" % (100 * np.sum(corloc) / cnt))
+    print("File saved at %s" % result_file)

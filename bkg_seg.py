@@ -17,6 +17,7 @@ import torch.nn.functional as F
 
 from typing import Tuple
 
+
 def compute_img_bkg_seg(
     attentions,
     feats,
@@ -30,7 +31,7 @@ def compute_img_bkg_seg(
     inputs
        - attentions [B, ]
     """
-    
+
     w_featmap, h_featmap = featmap_dims
 
     nb, nh, _ = attentions.shape[:3]
@@ -47,15 +48,16 @@ def compute_img_bkg_seg(
     beta = torch.log(torch.sum(Q + epsilon, dim=1)[:, None] / (Q + epsilon))
 
     # Weight features based on attention sparsity
-    descs = feats[:,1:,]
+    descs = feats[
+        :,
+        1:,
+    ]
     if apply_weights:
         descs = (descs.reshape(nb, -1, nh, dim) * beta[:, None, :, None]).reshape(
             nb, -1, nh * dim
         )
     else:
-        descs = (descs.reshape(nb, -1, nh, dim)).reshape(
-            nb, -1, nh * dim
-        )
+        descs = (descs.reshape(nb, -1, nh, dim)).reshape(nb, -1, nh * dim)
 
     # -----------------------------------------------
     # Compute cosine-similarities
@@ -67,7 +69,7 @@ def compute_img_bkg_seg(
     if apply_weights:
         att = att.reshape(nb, nh, w_featmap, h_featmap) * beta[:, :, None, None]
     else:
-        att = att.reshape(nb, nh, w_featmap, h_featmap) 
+        att = att.reshape(nb, nh, w_featmap, h_featmap)
     id_pixel_ref = torch.argmin(torch.sum(att, axis=1).reshape(nb, -1), dim=-1)
 
     # -----------------------------------------------

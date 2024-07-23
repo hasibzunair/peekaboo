@@ -2,6 +2,7 @@
 Code borrowed from SelfMask: https://github.com/NoelShin/selfmask
 """
 
+
 class AverageMeter(object):
     """Computes and stores the average and current value"""
 
