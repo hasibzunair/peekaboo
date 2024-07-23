@@ -14,6 +14,8 @@ This is official code for our **BMVC 2024 paper**:<br>
 
 We propose a method for unsupervised object localization by learning context-based representations. This is done at both the pixel-level by making predictions on masked images and at shape-level by matching the predictions of the masked input to the unmasked one.
 
+**Note**: This work extends on our previous work [MSL](https://github.com/hasibzunair/msl-recognition) for recognition of small and occluded objects and also [MaskSup](https://github.com/hasibzunair/masksup-segmentation) for supervised segmentation of ambiguous regions while being simple and efficient.
+
 ## 1. Specification of dependencies
 
 This code requires Python 3.8 and CUDA 11.2. Create and activate the following conda envrionment.
@@ -62,7 +64,7 @@ We use the following datasets:
 - [DUTS-TEST](http://saliencydetection.net/duts/): `--dataset-eval DUTS-TEST`
 - [ECSSD](https://www.cse.cuhk.edu.hk/leojia/projects/hsaliency/dataset.html): `--dataset-eval ECSSD`.
 
-Download and keep them in `datasets_local` and provide the dataset directory using the argument `--dataset-dir`.
+Download and keep them in `datasets_local`.
 
 #### Single Object Discovery
 
@@ -72,10 +74,12 @@ For single object discovery, we follow the framework used in [LOST](https://gith
 - [VOC12](http://host.robots.ox.ac.uk/pascal/VOC/): `--dataset-eval VOC12`
 - [COCO20k](https://cocodataset.org/#home): `--dataset-eval COCO20k`
 
-## DUTS-TR training
+Finally, download the masks of random streaks and holes of arbitrary shapes from [SCRIBBLES.zip](https://github.com/hasibzunair/masksup-segmentation/releases/download/v1.0/SCRIBBLES.zip) and put in inside `datasets` folder.
+
+### DUTS-TR training
 
 ```bash
-export DATASET_DIR=datasets_local # Root directory of all datasets, both training and evaluation
+export DATASET_DIR=datasets_local # root directory training and evaluation datasets
 
 python train.py --exp-name peekaboo --dataset-dir $DATASET_DIR
 ```
@@ -84,7 +88,7 @@ See tensorboard logs by running: `tensorboard --logdir=outputs`.
 
 ## 2b. Evaluation code
 
-After training, the model checkpoint and logs are available in `outputs` folder.
+After training, the model checkpoint and logs are available in `peekaboo-DUTS-TR-vit_small8` in the `outputs` folder. Set the model path for evaluation.
 
 ```bash
 export MODEL="outputs/peekaboo-DUTS-TR-vit_small8/decoder_weights_niter500.pt"
@@ -93,6 +97,7 @@ export MODEL="outputs/peekaboo-DUTS-TR-vit_small8/decoder_weights_niter500.pt"
 ### Unsupervised saliency detection eval
 
 ```bash
+# run evaluation
 source evaluate_saliency.sh $MODEL $DATASET_DIR single
 source evaluate_saliency.sh $MODEL $DATASET_DIR multi
 ```
@@ -100,6 +105,7 @@ source evaluate_saliency.sh $MODEL $DATASET_DIR multi
 ### Single object discovery eval
 
 ```bash
+# run evalulation
 source evaluate_uod.sh $MODEL $DATASET_DIR
 ```
 
