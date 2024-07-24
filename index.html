@@ -138,7 +138,7 @@
 <body>
 	<br>
 	<center>
-		<span style="font-size:36px">(WEBPAGE UNDER DEVELOPMENT!) PEEKABOO: Hiding Parts of an Image for Unsupervised Object Localization</span>
+		<span style="font-size:36px">PEEKABOO: Hiding Parts of an Image for Unsupervised Object Localization</span>
 		<table align=center width=600px>
 			<table align=center width=450px> <!--Adjust for spacing between author names-->
 				<tr>
@@ -189,12 +189,12 @@
 			</table>
 
 			<!--Add publication details here.-->
-			<table align="center" width="750px">
+			<table align="center" width="400px">
 				<tbody>
 					<tr>
 						<td align="center" width="100px">
 							<center>
-								<span style="font-size:25px; color: crimson;">IEEE/CVF Winter Conference on Applications of Computer Vision WACV 2024</span>
+								<span style="font-size:25px; color: crimson;">British Machine Vision Conference BMVC 2024</span>
 							</center>
 							<!--
 							<center>
@@ -212,35 +212,37 @@
 					
 					<td align=center width=80px>
 						<center>
-							<span style="font-size:24px"><a href='https://huggingface.co/spaces/hasibzunair/msl-recognition-demo'>[Demo]</a></span><br>
+							<span style="font-size:24px"><a href='https://github.com/hasibzunair/peekaboo?tab=readme-ov-file#4-demo'>[Demo]</a></span><br>
 						</center>
 					</td>
 					
 					<td align=center width=80px>
 						<center>
-							<span style="font-size:24px"><a href='https://github.com/hasibzunair/msl-recognition'>[GitHub]</a></span><br>
+							<span style="font-size:24px"><a href='https://github.com/hasibzunair/peekaboo'>[GitHub]</a></span><br>
 						</center>
 					</td>
 					
 					<td align=center width=80px>
 						<center>
-							<span style="font-size:24px"><a href='https://openaccess.thecvf.com/content/WACV2024/html/Zunair_Learning_To_Recognize_Occluded_and_Small_Objects_With_Partial_Inputs_WACV_2024_paper.html'>[Paper]</a></span>
+							<span style="font-size:24px"><a href='TBA'>[Paper]</a></span>
+						</center>
+					</td>
+
+					<!--  
+					<td align=center width=80px>
+						<center>
+							<span style="font-size:24px"><a href='TBA'>[Video]</a></span>
 						</center>
 					</td>
 
 
 					<td align=center width=80px>
 						<center>
-							<span style="font-size:24px"><a href='https://youtu.be/koxIipyvmZk?si=AQI_LmsivzZCulDm'>[Video]</a></span>
+							<span style="font-size:24px"><a href='TBA'>[Poster]</a></span>
 						</center>
 					</td>
+					-->
 
-
-					<td align=center width=80px>
-						<center>
-							<span style="font-size:24px"><a href='poster.pdf'>[Poster]</a></span>
-						</center>
-					</td>
 					
 					<!--  
 					<td align=center width=120px>
@@ -274,7 +276,7 @@
 				<td width=260px>
 					<center>
 						<!--Add intro image here.-->
-						<img class="round" style="width:850px" src="./resources/compare_predictions.png"/>
+						<img class="round" style="width:850px" src="./resources/compare_predictions.jpg"/>
 						
 					</center>
 				</td>
@@ -283,10 +285,11 @@
 			<tr>
 				<td width="600px">
 					<center>
-						<span style="font-size:16px"><i><strong>Visual comparison of MSL (Ours) and CSRA on VOC2007 and MS-COCO datasets</strong>. First two rows show samples from 
-							VOC2007 where MSL can better recognize small objects and the second row shows cases of heavy occlusions. The last two rows 
-							shows samples from MS-COCO. For both datasets, MSL is effective at recognizing <strong>small</strong> and <strong>occluded</strong> 
-							objects compared to the baseline.</i>
+						<span style="font-size:16px"><i><strong> 
+							Visual comparison of PEEKABOO and state-of-the-art FOUND on ECSSD, DUT-OMRON and DUTS-TE datasets</strong>. Across all datasets, PEEKABOO excels
+							in localizing salient objects, particularly when they are <strong>small</strong>, <strong>reflective</strong>, or when background is 
+							<strong>poorly illuminated</strong>. PEEKABOO also avoids <strong>over-segmenting salient objects</strong>, <strong>segmenting non-salient regions</strong>, 
+							and <strong>producing noisy predictions</strong>. Zoom in to observe the results more closely.</i>
 						</span>
 					</center>
 				</td>
@@ -306,34 +309,36 @@
 				<br>
 		  
 				<i> 
-					Aloha! While computer vision algorithms work well on some images, they often fail in others largely due to 
-					small size of objects and occlusions. Even though this is not a solved problem, quite far from it, 
+					While unsupervised object localization algorithms work well on many cases, they often fail to segment salient objects 
+					that are small, reflective or when the background is poorly illuminated. These real-world characterstics result in methods to 
+					over-segment, segment non-salient regions and produce noisy segmentation maps. 
+					Even though this is not a solved problem, quite far from it, 
 					we believe our work is a significant step forward in solving 
-					the recognition of small and occluded objects. There has been some concurrent work on this subject as well. 
-					Specifically, see <a href="https://arxiv.org/abs/2007.01755">MCAR</a>.
+					unsupervised object localization in the aforementioned scenarios. 
+					There has been some concurrent work on this subject as well. 
+					Specifically, see <a href="https://valeoai.github.io/blog/publications/found/">FOUND</a>.
 				</i>
 
 				<br><br>
 
 				<i> 
-					Our appraoch aims to explicitly focus on context from neighbouring regions around objects. Further, 
-					this also enables to learn a distribution of association across classes. Ideally to handle situations in-the-wild where 
-					only part of some object class is visible, but where us humans might readily use context to infer the classes presence.
+					Our appraoch aim to explicitly model contextual relationship among pixels through image masking for unsupervised object localization. 
+					In a self-training procedure, context-based representation learning is done at both the pixel-level by making predictions on masked images and at shape-level by matching the 
+					predictions of the masked input to the unmasked one.
 				</i>
 
 				<br><br>
 
 				<i>
-					We also explored this technique in our previous 
-					work <a href="https://arxiv.org/abs/2210.00923"><strong>Masked Supervised Learning for Semantic Segmentation</strong></a> (BMVC 2022, Oral)
-					where we find that MSL trained 
-					models are significantly compute efficient, better segments ambiguous and small regions, and is shape aware as it enables to quite well 
-					segment heavily masked regions.
+
+					We also explored this technique in our previous works for the <a href="https://openaccess.thecvf.com/content/WACV2024/html/Zunair_Learning_To_Recognize_Occluded_and_Small_Objects_With_Partial_Inputs_WACV_2024_paper.html"><strong>recognition</strong></a> 
+					of small and occluded objects (WACV 2024) and for <a href="https://arxiv.org/abs/2210.00923"><strong>supervised segmentation</strong></a> of ambiguous regions and is shape aware as it enables to quite well 
+					segment heavily masked regions while being simple and compute efficient (BMVC 2022, Oral).
 				</i>
 
 				<br><br>
 
-				<i>Do enjoy our results, and definitely <a href="https://huggingface.co/spaces/hasibzunair/msl-recognition-demo">try the model</a> yourself</i>!
+				<i>Do enjoy our results, and definitely <a href="https://github.com/hasibzunair/peekaboo?tab=readme-ov-file#4-demo">try the model</a> yourself</i>!
 	  		</span>
 	  	</div>
 
@@ -344,18 +349,19 @@
 		<center><h1>Abstract</h1></center>
 		<tr>
 			<td>
-				Recognizing multiple objects in an image is challenging due to occlusions, and becomes even more 
-				so when the objects are small. While promising, existing multi-label image recognition models do not 
-				explicitly learn context-based representations, and hence 
-				<FONT COLOR="#ff0000">struggle to correctly recognize small and occluded objects</FONT>. Intuitively, recognizing occluded 
-				objects requires knowledge of partial input, and hence context. Motivated by this intuition, we 
-				propose <strong>Masked Supervised Learning (MSL)</strong>, a single-stage, model-agnostic 
-				learning paradigm for multi-label image recognition. The key idea is to learn context-based representations 
-				using a masked branch and to model label co-occurrence using label consistency. 
-				Experimental results demonstrate the <FONT COLOR="#46C646">simplicity, applicability and 
-				more importantly the competitive performance</FONT> of MSL against previous state-of-the-art methods 
-				on standard multi-label image recognition benchmarks. In addition, we show that MSL is robust to random 
-				masking and demonstrate its effectiveness in recognizing non-masked objects.
+				Localizing objects in an unsupervised manner poses significant challenges due to the absence of key visual 
+				information such as the appearance, type and number of objects, as well as the lack of labeled object classes 
+				typically available in supervised settings. While recent approaches to unsupervised object localization have 
+				demonstrated significant progress by leveraging self-supervised visual representations, they often <FONT COLOR="#ff0000">require 
+				computationally intensive training processes, resulting in high resource demands in terms of computation, 
+				learnable parameters, and data</FONT>. They also <FONT COLOR="#ff0000">lack explicit modeling of visual context, potentially limiting 
+				their accuracy in object localization</FONT>. To tackle these challenges, <strong>we propose a single-stage learning framework, 
+				dubbed PEEKABOO, for unsupervised object localization</strong> by learning context-based representations at both the 
+				pixel- and shape-level of the localized objects through image masking. The key idea is to selectively hide parts 
+				of an image and leverage the remaining image information to infer the location of objects without explicit supervision. 
+				The experimental results, both quantitative and qualitative, across various benchmark datasets, <FONT COLOR="#46C646">demonstrate the simplicity, 
+				effectiveness and competitive performance</FONT> of our approach compared to state-of-the-art methods in both single object 
+				discovery and unsupervised salient object detection tasks.
 			</td>
 		</tr>
 	</table>
@@ -389,7 +395,7 @@
 		<tr>
 			<td align=center width=400px>
 				<center>
-					<td><img class="round" style="width:850px" src="./resources/figure.png"/></td>
+					<td><img class="round" style="width:850px" src="./resources/figure.jpg"/></td>
 				</center>
 			</td>
 		</tr>
@@ -403,8 +409,8 @@
 		<tr>
 			<td><a href=""><img class="layered-paper-big" style="height:175px" src="./resources/paper.png"/></a></td>
 			<td><span style="font-size:14pt">Hasib Zunair and A. Ben Hamza<br>
-				<b>Learning to Recognize Occluded and Small Objects with Partial Inputs.</b><br>
-				In WACV, 2024.<br>
+				<b>PEEKABOO: Hiding Parts of an Image for Unsupervised Object Localization.</b><br>
+				In BMVC, 2024.<br>
 				<!--Add arXiv link-->
 				(hosted on <a href="https://arxiv.org/abs/2310.18517">ArXiv</a>)<br>
 				</span>
