@@ -12,9 +12,7 @@ This is official code for our **BMVC 2024 paper**:<br>
 
 ![MSL Design](./media/figure.jpg)
 
-We propose a method for unsupervised object localization by learning context-based representations. This is done at both the pixel-level by making predictions on masked images and at shape-level by matching the predictions of the masked input to the unmasked one.
-
-**Note**: This work extends on our previous work for the [recognition](https://github.com/hasibzunair/msl-recognition) of small and occluded objects (WACV 2024) and for [supervised segmentation](https://github.com/hasibzunair/masksup-segmentation) of ambiguous regions and is shape aware as it enables to quite well segment heavily masked regions while being simple and compute efficient (BMVC 2022, Oral).
+We aim to explicitly model contextual relationship among pixels through image masking for unsupervised object localization. In a self-supervised procedure without any additional training (i.e. downstream task), context-based representation learning (i.e. pretext task) is done at both the pixel-level by making predictions on masked images and at shape-level by matching the predictions of the masked input to the unmasked one.
 
 ## 1. Specification of dependencies
 
@@ -39,14 +37,14 @@ cd peekaboo
 # create fresh env
 conda create -n peekaboo python=3.8     
 conda activate peekaboo
-# Example of pytorch installation
+# example of pytorch installation
 pip install torch===1.8.1 torchvision==0.9.1 -f https://download.pytorch.org/whl/torch_stable.html
 pip install pycocotools
 # install dependencies
 pip install -r requirements.txt
 ```
 
-And then, install [DINO](https://arxiv.org/pdf/2104.14294.pdf):
+And then, install [DINO](https://arxiv.org/pdf/2104.14294.pdf) using the following commands:
 
 ```bash
 git clone https://github.com/facebookresearch/dino.git
@@ -59,9 +57,9 @@ echo -e "import sys\nfrom os.path import dirname, join\nsys.path.insert(0, join(
 
 ### Dataset details
 
-We train on [DUTS-TR](http://saliencydetection.net/duts/) dataset. Download it, then create a directory inside the project folder named `datasets_local` and put it there.
+We train Peekaboo on only the images of [DUTS-TR](http://saliencydetection.net/duts/) dataset without any labels, since Peekaboo is self-supervised. Download it, then create a directory inside the project folder named `datasets_local` and put it there.
 
-We evaluate on two tasks: unsupervised saliency detection and single object discovery.
+We evaluate on two tasks: unsupervised saliency detection and single object discovery. Since our method is used in an unsupervised setting, it does not require training or fine-tuning on the datasets we evaluate on.
 
 #### Unsupervised Saliency Detection
 
@@ -95,7 +93,7 @@ See tensorboard logs by running: `tensorboard --logdir=outputs`.
 
 ## 2b. Evaluation code
 
-After training, the model checkpoint and logs are available in `peekaboo-DUTS-TR-vit_small8` in the `outputs` folder. Set the model path for evaluation. Since our method is unsupervised, it does not require training on the datasets we evaluate on.
+After training, the model checkpoint and logs are available in `peekaboo-DUTS-TR-vit_small8` in the `outputs` folder. Set the model path for evaluation.
 
 ```bash
 export MODEL="outputs/peekaboo-DUTS-TR-vit_small8/decoder_weights_niter500.pt"

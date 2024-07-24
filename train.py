@@ -132,7 +132,7 @@ def train_model(
             # im = to_img(input_nonorm[0])
             # plt.imshow(im); plt.show()
 
-            # Inputs and gt labels
+            # Inputs and masked inputs
             inputs = inputs.to("cuda")
             masked_inputs = masked_inputs.to("cuda")
 
