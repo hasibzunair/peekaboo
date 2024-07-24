@@ -14,7 +14,7 @@ This is official code for our **BMVC 2024 paper**:<br>
 
 We propose a method for unsupervised object localization by learning context-based representations. This is done at both the pixel-level by making predictions on masked images and at shape-level by matching the predictions of the masked input to the unmasked one.
 
-**Note**: This work extends on our previous work [MSL](https://github.com/hasibzunair/msl-recognition) for recognition of small and occluded objects and also [MaskSup](https://github.com/hasibzunair/masksup-segmentation) for supervised segmentation of ambiguous regions while being simple and efficient.
+**Note**: This work extends on our previous work for the [recognition](https://github.com/hasibzunair/msl-recognition) of small and occluded objects (WACV 2024) and for [supervised segmentation](https://github.com/hasibzunair/masksup-segmentation) of ambiguous regions and is shape aware as it enables to quite well segment heavily masked regions while being simple and compute efficient (BMVC 2022, Oral).
 
 ## 1. Specification of dependencies
 
