@@ -5,6 +5,7 @@
 """Training code for Peekaboo"""
 
 import os
+import sys
 import json
 import argparse
 
@@ -15,13 +16,44 @@ from tqdm import tqdm
 
 from model import PeekabooModel
 from evaluation.saliency import evaluate_saliency
-from misc import (
-    batch_apply_bilateral_solver,
-    set_seed,
-    load_config,
-)
+from misc import batch_apply_bilateral_solver, set_seed, load_config, Logger
 
 from datasets.datasets import build_dataset
+
+
+def get_argparser():
+    parser = argparse.ArgumentParser(
+        description="Training of Peekaboo",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument("--exp-name", type=str, default=None, help="Exp name.")
+    parser.add_argument(
+        "--log-dir", type=str, default="outputs", help="Logging and output directory."
+    )
+    parser.add_argument(
+        "--dataset-dir",
+        type=str,
+        required=True,
+        help="Root directories of training and evaluation datasets.",
+    )
+    parser.add_argument(
+        "--config",
+        type=str,
+        default="configs/peekaboo_DUTS-TR.yaml",
+        help="Path of config file.",
+    )
+    parser.add_argument(
+        "--save-model-freq", type=int, default=250, help="Frequency of model saving."
+    )
+    parser.add_argument(
+        "--visualization-freq",
+        type=int,
+        default=10,
+        help="Frequency of prediction visualization in tensorboard.",
+    )
+
+    args = parser.parse_args()
+    return args
 
 
 def train_model(
@@ -254,46 +286,16 @@ def train_model(
     return model
 
 
-if __name__ == "__main__":
+def main():
 
     ########## Get arguments ##########
 
-    parser = argparse.ArgumentParser(
-        description="Training of Peekaboo",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-    )
-    parser.add_argument("--exp-name", type=str, default=None, help="Exp name.")
-    parser.add_argument(
-        "--log-dir", type=str, default="outputs", help="Logging and output directory."
-    )
-    parser.add_argument(
-        "--dataset-dir",
-        type=str,
-        required=True,
-        help="Root directories of training and evaluation datasets.",
-    )
-    parser.add_argument(
-        "--config",
-        type=str,
-        default="configs/peekaboo_DUTS-TR.yaml",
-        help="Path of config file.",
-    )
-    parser.add_argument(
-        "--save-model-freq", type=int, default=250, help="Frequency of model saving."
-    )
-    parser.add_argument(
-        "--visualization-freq",
-        type=int,
-        default=10,
-        help="Frequency of prediction visualization in tensorboard.",
-    )
-
-    args = parser.parse_args()
-    print(args.__dict__)
+    args = get_argparser()
 
     ########## Setup ##########
 
-    config = load_config(args.config)
+    # Load config yaml file
+    config, config_ = load_config(args.config)
 
     # Experiment name
     exp_name = "{}-{}{}".format(
@@ -305,6 +307,7 @@ if __name__ == "__main__":
 
     # Log dir
     output_dir = os.path.join(args.log_dir, exp_name)
+
     # Logging
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -313,6 +316,18 @@ if __name__ == "__main__":
     with open(f"{output_dir}/config.json", "w") as f:
         print(f"Config saved in {output_dir}/config.json.")
         json.dump(args.__dict__, f)
+
+    # Save output of terminal in log file
+    sys.stdout = Logger(os.path.join(output_dir, "log_train.txt"))
+    arguments = str(args).split(", ")
+    print("=========================\nConfigs:{}\n=========================")
+    for i in range(len(arguments)):
+        print(arguments[i])
+    print(
+        "Hyperparameters from config file: "
+        + ", ".join(f"{k}={v}" for k, v in config_.items())
+    )
+    print("=========================")
 
     ########## Reproducibility ##########
 
@@ -354,3 +369,7 @@ if __name__ == "__main__":
         save_model_freq=args.save_model_freq,
     )
     print(f"\nTraining done, Peekaboo model saved in {output_dir}.")
+
+
+if __name__ == "__main__":
+    main()
