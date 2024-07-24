@@ -12,7 +12,7 @@ This is official code for our **BMVC 2024 paper**:<br>
 
 ![MSL Design](./media/figure.jpg)
 
-We aim to explicitly model contextual relationship among pixels through image masking for unsupervised object localization. In a self-supervised procedure without any additional training (i.e. downstream task), context-based representation learning (i.e. pretext task) is done at both the pixel-level by making predictions on masked images and at shape-level by matching the predictions of the masked input to the unmasked one.
+We aim to explicitly model contextual relationship among pixels through image masking for unsupervised object localization. In a self-supervised procedure (i.e. pretext task) without any additional training (i.e. downstream task), context-based representation learning is done at both the pixel-level by making predictions on masked images and at shape-level by matching the predictions of the masked input to the unmasked one.
 
 ## 1. Specification of dependencies
 
