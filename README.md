@@ -1,4 +1,4 @@
-# Peekaboo (THIS REPOSITORY IS UNDER CONSTRUCTION!)
+# Peekaboo
 
 **Concordia University**
 
@@ -18,9 +18,13 @@ We propose a method for unsupervised object localization by learning context-bas
 
 ## 1. Specification of dependencies
 
-This code requires Python 3.8 and CUDA 11.2. Create and activate the following conda envrionment.
+This code requires Python 3.8 and CUDA 11.2. Clone the project repository, then create and activate the following conda envrionment.
 
 ```bash
+# clone repo
+git clone https://github.com/hasibzunair/peekaboo
+cd peekaboo
+# create env
 conda update conda
 conda env create -f environment.yml
 conda activate peekaboo
@@ -29,6 +33,9 @@ conda activate peekaboo
 Or, you can also create a fresh environment and install the project requirements inside that environment by:
 
 ```bash
+# clone repo
+git clone https://github.com/hasibzunair/peekaboo
+cd peekaboo
 # create fresh env
 conda create -n peekaboo python=3.8     
 conda activate peekaboo
@@ -52,7 +59,7 @@ echo -e "import sys\nfrom os.path import dirname, join\nsys.path.insert(0, join(
 
 ### Dataset details
 
-We train on [DUTS-TR](http://saliencydetection.net/duts/) dataset. Download it, then create a directory in the root folder named `datasets_local` and put it there.
+We train on [DUTS-TR](http://saliencydetection.net/duts/) dataset. Download it, then create a directory inside the project folder named `datasets_local` and put it there.
 
 We evaluate on two tasks: unsupervised saliency detection and single object discovery.
 

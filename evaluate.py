@@ -64,7 +64,7 @@ if __name__ == "__main__":
     print(args.__dict__)
 
     # Configuration
-    config = load_config(args.config)
+    config, _ = load_config(args.config)
 
     # Load the model
     model = PeekabooModel(
