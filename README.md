@@ -52,7 +52,7 @@ echo -e "import sys\nfrom os.path import dirname, join\nsys.path.insert(0, join(
 
 ### Dataset details
 
-We train on [DUTS-TR](http://saliencydetection.net/duts/) dataset that should be downloaded and put in the directory `datasets_local`.
+We train on [DUTS-TR](http://saliencydetection.net/duts/) dataset. Download it, then create a directory in the root folder named `datasets_local` and put it there.
 
 We evaluate on two tasks: unsupervised saliency detection and single object discovery.
 
@@ -60,21 +60,21 @@ We evaluate on two tasks: unsupervised saliency detection and single object disc
 
 We use the following datasets:
 
-- [DUT-OMRON](http://saliencydetection.net/dut-omron/): `--dataset-eval DUT-OMRON`
-- [DUTS-TEST](http://saliencydetection.net/duts/): `--dataset-eval DUTS-TEST`
-- [ECSSD](https://www.cse.cuhk.edu.hk/leojia/projects/hsaliency/dataset.html): `--dataset-eval ECSSD`.
+- [DUT-OMRON](http://saliencydetection.net/dut-omron/)
+- [DUTS-TEST](http://saliencydetection.net/duts/)
+- [ECSSD](https://www.cse.cuhk.edu.hk/leojia/projects/hsaliency/dataset.html)
 
-Download and keep them in `datasets_local`.
+Download the datasets and keep them in `datasets_local`.
 
 #### Single Object Discovery
 
 For single object discovery, we follow the framework used in [LOST](https://github.com/valeoai/LOST). Download the datasets and put them in the folder `datasets_local`.
 
-- [VOC07](http://host.robots.ox.ac.uk/pascal/VOC/): `--dataset-eval VOC07`
-- [VOC12](http://host.robots.ox.ac.uk/pascal/VOC/): `--dataset-eval VOC12`
-- [COCO20k](https://cocodataset.org/#home): `--dataset-eval COCO20k`
+- [VOC07](http://host.robots.ox.ac.uk/pascal/VOC/)
+- [VOC12](http://host.robots.ox.ac.uk/pascal/VOC/)
+- [COCO20k](https://cocodataset.org/#home)
 
-Finally, download the masks of random streaks and holes of arbitrary shapes from [SCRIBBLES.zip](https://github.com/hasibzunair/masksup-segmentation/releases/download/v1.0/SCRIBBLES.zip) and put in inside `datasets` folder.
+Finally, download the masks of random streaks and holes of arbitrary shapes from [SCRIBBLES.zip](https://github.com/hasibzunair/masksup-segmentation/releases/download/v1.0/SCRIBBLES.zip) and put it inside `datasets` folder.
 
 ### DUTS-TR training
 
@@ -88,7 +88,7 @@ See tensorboard logs by running: `tensorboard --logdir=outputs`.
 
 ## 2b. Evaluation code
 
-After training, the model checkpoint and logs are available in `peekaboo-DUTS-TR-vit_small8` in the `outputs` folder. Set the model path for evaluation.
+After training, the model checkpoint and logs are available in `peekaboo-DUTS-TR-vit_small8` in the `outputs` folder. Set the model path for evaluation. Since our method is unsupervised, it does not require training on the datasets we evaluate on.
 
 ```bash
 export MODEL="outputs/peekaboo-DUTS-TR-vit_small8/decoder_weights_niter500.pt"
@@ -109,13 +109,11 @@ source evaluate_saliency.sh $MODEL $DATASET_DIR multi
 source evaluate_uod.sh $MODEL $DATASET_DIR
 ```
 
-Since our method is unsupervised, it does not require training on the datasets we evaluate on.
-
 All experiments are conducted on a single NVIDIA 3080Ti GPU. For additional implementation details and results, please refer to the supplementary materials section in the paper.
 
 ## 3. Pre-trained models
 
-We provide pretrained models on [./data/weights/](./data/weights/) for reproducibility. Here are the main results of Peekaboo on single object discovery. For unsupervised saliency detection results, we refer readers to our paper!
+We provide pretrained models on [./data/weights/](./data/weights/) for reproducibility. Here are the main results of Peekaboo on single object discovery task. For results on unsupervised saliency detection task, we refer readers to our paper!
 
 |Dataset      | Backbone  |   CorLoc (%)  |   Download   |
 |  ---------- | -------   |  ------ |  --------   |
@@ -128,7 +126,7 @@ We provide pretrained models on [./data/weights/](./data/weights/) for reproduci
 We provide prediction demos of our models. The following applies and visualizes our method on a single image.
 
 ```bash
-# infer on one images
+# infer on one image
 python demo.py
 ```
 
