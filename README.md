@@ -4,7 +4,7 @@
 
 Hasib Zunair, A. Ben Hamza
 
-[[`Paper`](link)] [[`Project`](https://hasibzunair.github.io/peekaboo/)] [[`Demo`](#4-demo)] [[`BibTeX`](#5-citation)]
+[[`Paper`](https://arxiv.org/abs/2407.17628)] [[`Project`](https://hasibzunair.github.io/peekaboo/)] [[`Demo`](#4-demo)] [[`BibTeX`](#5-citation)]
 
 This is official code for our **BMVC 2024 paper**:<br>
 [PEEKABOO: Hiding Parts of an Image for Unsupervised Object Localization](Link)
