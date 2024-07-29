@@ -135,7 +135,11 @@ We provide prediction demos of our models. The following applies and visualizes 
 python demo.py
 ```
 
-If you want to test on your own images, you can also run the gradio app that serves predictions locally by running `python app.py`.
+If you want to test on your own images, you can run following that builds a gradio app that serves predictions locally.
+```bash
+# run gradio app locally
+python app.py
+```
 
 A web demo is available [here](https://huggingface.co/spaces/hasibzunair/peekaboo-demo).
 
