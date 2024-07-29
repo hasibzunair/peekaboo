@@ -67,6 +67,7 @@ if __name__ == "__main__":
 
     # Configuration
     config, _ = load_config(args.config)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Load the model
     model = PeekabooModel(
@@ -87,7 +88,7 @@ if __name__ == "__main__":
 
         t = T.Compose([T.ToTensor(), NORMALIZE])
         img_t = t(img)[None, :, :, :]
-        inputs = img_t.to("cuda")
+        inputs = img_t.to(device)
 
     # Forward step
     with torch.no_grad():

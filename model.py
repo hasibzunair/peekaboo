@@ -95,12 +95,15 @@ class PeekabooModel(nn.Module):
     def decoder_load_weights(self, weights_path):
         print(f"Loading model from weights {weights_path}.")
         # Load states
-        state_dict = torch.load(weights_path)
+        if torch.cuda.is_available():
+            state_dict = torch.load(weights_path)
+        else:
+            state_dict = torch.load(weights_path, map_location=torch.device("cpu"))
 
         # Decoder
         self.decoder.load_state_dict(state_dict["decoder"])
         self.decoder.eval()
-        self.decoder.to("cuda")
+        self.decoder.to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
 
     @torch.no_grad()
     def decoder_save_weights(self, save_dir, n_iter):
@@ -154,7 +157,9 @@ def get_vit_encoder(vit_arch, vit_model, vit_patch_size, enc_type_feats):
         # TODO change if want to have last layer not unfrozen
         for p in vit_encoder.parameters():
             p.requires_grad = False
-        vit_encoder.eval().cuda()  # mode eval
+        vit_encoder.eval().to(
+            torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        )  # mode eval
         state_dict = torch.hub.load_state_dict_from_url(
             url="https://dl.fbaipublicfiles.com/dino/" + url
         )

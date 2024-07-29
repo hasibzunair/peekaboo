@@ -187,9 +187,10 @@ class PeekabooDataset(Dataset):
 
         # Transformations
         if self.for_eval:
-            full_img_transform, no_norm_full_img_transform = (
-                self.get_init_transformation(isVOC="VOC" in name)
-            )
+            (
+                full_img_transform,
+                no_norm_full_img_transform,
+            ) = self.get_init_transformation(isVOC="VOC" in name)
             self.full_img_transform = full_img_transform
             self.no_norm_full_img_transform = no_norm_full_img_transform
 
