@@ -136,6 +136,7 @@ python demo.py
 ```
 
 If you want to test on your own images, you can run following that builds a gradio app that serves predictions locally.
+
 ```bash
 # run gradio app locally
 python app.py
