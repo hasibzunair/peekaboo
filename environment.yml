@@ -1,5 +1,4 @@
-# Environment used for this work
-name: peekaboo
+name: uobjl
 channels:
   - defaults
   - conda-forge
@@ -59,7 +58,6 @@ dependencies:
   - chardet=4.0.0=py38h06a4308_1003
   - charls=2.2.0=h2531618_0
   - charset-normalizer=2.0.4=pyhd3eb1b0_0
-  - click=8.0.4=py38h06a4308_0
   - cloudpickle=2.2.1=py38h06a4308_0
   - colorama=0.4.6=py38h06a4308_0
   - colorcet=3.0.1=py38h06a4308_0
@@ -106,7 +104,6 @@ dependencies:
   - fonttools=4.25.0=pyhd3eb1b0_0
   - freetype=2.12.1=h4a9f257_0
   - frozenlist=1.3.3=py38h5eee18b_0
-  - fsspec=2023.4.0=py38h06a4308_0
   - gensim=4.3.0=py38h6a678d5_0
   - gflags=2.2.2=he6710b0_0
   - giflib=5.2.1=h5eee18b_3
@@ -122,7 +119,6 @@ dependencies:
   - hdf5=1.12.1=h2b7332f_3
   - heapdict=1.0.1=pyhd3eb1b0_0
   - holoviews=1.17.1=py38h06a4308_0
-  - huggingface_hub=0.15.1=py38h06a4308_0
   - hvplot=0.8.4=py38h06a4308_0
   - hyperlink=21.0.0=pyhd3eb1b0_0
   - icu=58.2=he6710b0_3
@@ -271,7 +267,6 @@ dependencies:
   - openpyxl=3.0.10=py38h5eee18b_0
   - openssl=3.0.10=h7f8727e_2
   - orc=1.7.4=hb3bc3d3_1
-  - packaging=23.1=py38h06a4308_0
   - pandas=2.0.3=py38h1128e8f_0
   - pandocfilters=1.5.0=pyhd3eb1b0_0
   - panel=0.14.3=py38h06a4308_0
@@ -279,7 +274,6 @@ dependencies:
   - parsel=1.6.0=py38h06a4308_0
   - parso=0.8.3=pyhd3eb1b0_0
   - partd=1.4.0=py38h06a4308_0
-  - pathspec=0.10.3=py38h06a4308_0
   - patsy=0.5.3=py38h06a4308_0
   - pcre=8.45=h295c915_0
   - pep8=1.7.1=py38h06a4308_1
@@ -287,7 +281,6 @@ dependencies:
   - pickleshare=0.7.5=pyhd3eb1b0_1003
   - pip=23.2.1=py38h06a4308_0
   - pkgutil-resolve-name=1.3.10=py38h06a4308_0
-  - platformdirs=3.10.0=py38h06a4308_0
   - plotly=5.9.0=py38h06a4308_0
   - pluggy=1.0.0=py38h06a4308_1
   - ply=3.11=py38_0
@@ -414,17 +407,14 @@ dependencies:
   - tldextract=3.2.0=pyhd3eb1b0_0
   - toml=0.10.2=pyhd3eb1b0_0
   - tomli=2.0.1=py38h06a4308_0
-  - tomlkit=0.11.1=py38h06a4308_0
   - toolz=0.12.0=py38h06a4308_0
   - tornado=6.3.2=py38h5eee18b_0
   - tqdm=4.65.0=py38hb070fc8_0
   - traitlets=5.7.1=py38h06a4308_0
   - twisted=22.10.0=py38h5eee18b_0
-  - typing_extensions=4.7.1=py38h06a4308_0
   - ujson=5.4.0=py38h6a678d5_0
   - unidecode=1.2.0=pyhd3eb1b0_0
   - unixodbc=2.3.11=h5eee18b_0
-  - urllib3=1.26.16=py38h06a4308_0
   - utf8proc=2.6.1=h27cfd23_0
   - w3lib=1.21.0=pyhd3eb1b0_0
   - watchdog=2.1.6=py38h06a4308_0
@@ -473,8 +463,9 @@ dependencies:
       - autodistill-sam-clip==0.1.3
       - autodistill-seggpt==0.1.6
       - autodistill-yolov8==0.1.2
-      - black==22.3.0
+      - black==24.4.2
       - cachetools==5.3.1
+      - click==8.1.7
       - clip==1.0
       - cmake==3.27.5
       - combinadics==0.0.3
@@ -488,13 +479,14 @@ dependencies:
       - fastapi==0.104.1
       - fasttext==0.9.2
       - ffmpy==0.3.1
+      - fsspec==2024.6.1
       - ftfy==6.1.1
       - future==0.18.3
       - fvcore==0.1.5.post20221221
       - google-auth==2.23.0
       - google-auth-oauthlib==1.0.0
-      - gradio==3.35.2
-      - gradio-client==0.7.0
+      - gradio==4.29.0
+      - gradio-client==0.16.1
       - grpcio==1.58.0
       - h11==0.14.0
       - httpcore==0.18.0
@@ -503,6 +495,7 @@ dependencies:
       - hydra-core==1.3.2
       - idna==2.10
       - iopath==0.1.9
+      - ipdb==0.13.13
       - linkify-it-py==2.0.2
       - lit==16.0.6
       - llava==0.0.1.dev0
@@ -532,9 +525,13 @@ dependencies:
       - opencv-python==4.8.0.76
       - opencv-python-headless==4.8.0.74
       - orjson==3.9.10
+      - packaging==24.1
+      - pathspec==0.12.1
       - pillow==8.4.0
+      - platformdirs==4.2.2
       - portalocker==2.8.2
       - protobuf==4.24.3
+      - ptflops==0.7.3
       - pybind11==2.11.1
       - pycocotools==2.0.7
       - pydantic==2.4.2
@@ -544,7 +541,7 @@ dependencies:
       - pyparsing==2.4.7
       - python-dotenv==1.0.0
       - python-magic==0.4.27
-      - python-multipart==0.0.6
+      - python-multipart==0.0.9
       - requests-oauthlib==1.3.1
       - requests-toolbelt==1.0.0
       - rf-groundingdino==0.1.2
@@ -552,24 +549,31 @@ dependencies:
       - rich==13.5.3
       - roboflow==1.1.9
       - rsa==4.9
+      - ruff==0.5.5
       - semantic-version==2.10.0
       - sentencepiece==0.1.98
       - sentry-sdk==1.34.0
+      - shellingham==1.5.4
       - starlette==0.27.0
       - supervision==0.9.0
       - tensorboard==2.14.0
       - tensorboard-data-server==0.7.1
       - termcolor==2.3.0
       - thop==0.1.1-2209072238
-      - timm==0.9.8
+      - timm==0.4.12
       - tokenizers==0.14.1
+      - tomlkit==0.12.0
       - torch==2.0.1
       - torchvision==0.15.2
       - transformers==4.35.0.dev0
       - triton==2.0.0
-      - typing-extensions==4.8.0
+      - typed-ast==1.5.5
+      - typer==0.12.3
+      - typing-extensions==4.12.2
       - uc-micro-py==1.0.2
       - ultralytics==8.0.81
+      - urllib3==2.2.2
       - uvicorn==0.23.2
       - websockets==11.0.3
       - yacs==0.1.8
+prefix: /home/hasib/anaconda3/envs/uobjl
