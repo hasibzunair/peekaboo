@@ -41,7 +41,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--img-path",
         type=str,
-        default="data/examples/VOC_000030.jpg",
+        default="data/examples/dinosaur.jpeg",
         help="Image path.",
     )
     parser.add_argument(
