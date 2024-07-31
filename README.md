@@ -126,6 +126,8 @@ We provide pretrained models on [./data/weights/](./data/weights/) for reproduci
 | VOC12 | ViT-S/8 | 75.9 | [download](./data/weights/peekaboo_decoder_weights_niter500.pt) |
 | COCO20K | ViT-S/8 | 64.0 | [download](./data/weights/peekaboo_decoder_weights_niter500.pt) |
 
+Additional pre-trained models of different configutations of Peekaboo can be found [here](https://github.com/hasibzunair/peekaboo/releases/tag/v1).
+
 ## 4. Demo
 
 We provide prediction demos of our models. The following applies and visualizes our method on a single image.
