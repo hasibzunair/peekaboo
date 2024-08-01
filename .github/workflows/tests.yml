@@ -1,6 +1,6 @@
 # Basic workflow to test code
 
-name: Peekaboo Model Tests
+name: Peekaboo CI Tests
 
 on:
   push:
