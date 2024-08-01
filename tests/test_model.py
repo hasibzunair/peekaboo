@@ -3,29 +3,33 @@ import torch
 
 sys.path.insert(0, "../")
 from model import PeekabooModel
-from misc import load_config
+
+
+# Variables
+PRE_TRAINING = "dino"
+ARCH = "vit_small"
+PATCH_SIZE = 8
+FEATS = "k"
 
 
 def test_model_pretrained():
-    config, _ = load_config("configs/peekaboo_DUTS-TR.yaml")
     model = PeekabooModel(
-        vit_model=config.model["pre_training"],
-        vit_arch=config.model["arch"],
-        vit_patch_size=config.model["patch_size"],
-        enc_type_feats=config.peekaboo["feats"],
+        vit_model=PRE_TRAINING,
+        vit_arch=ARCH,
+        vit_patch_size=PATCH_SIZE,
+        enc_type_feats=FEATS,
     )
     model.decoder_load_weights("data/weights/peekaboo_decoder_weights_niter500.pt")
 
 
 def test_model_function():
-    config, _ = load_config("configs/peekaboo_DUTS-TR.yaml")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = PeekabooModel(
-        vit_model=config.model["pre_training"],
-        vit_arch=config.model["arch"],
-        vit_patch_size=config.model["patch_size"],
-        enc_type_feats=config.peekaboo["feats"],
+        vit_model=PRE_TRAINING,
+        vit_arch=ARCH,
+        vit_patch_size=PATCH_SIZE,
+        enc_type_feats=FEATS,
     )
     model.decoder_load_weights("data/weights/peekaboo_decoder_weights_niter500.pt")
 
