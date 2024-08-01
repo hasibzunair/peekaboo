@@ -1,11 +1,11 @@
 # Copyright (c) Facebook, Inc. and its affiliates.
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -99,7 +99,9 @@ def dino_xcit_small_12_p16(pretrained=True, **kwargs):
     """
     XCiT-Small-12/16 pre-trained with DINO.
     """
-    model = torch.hub.load('facebookresearch/xcit:main', "xcit_small_12_p16", num_classes=0, **kwargs)
+    model = torch.hub.load(
+        "facebookresearch/xcit:main", "xcit_small_12_p16", num_classes=0, **kwargs
+    )
     if pretrained:
         state_dict = torch.hub.load_state_dict_from_url(
             url="https://dl.fbaipublicfiles.com/dino/dino_xcit_small_12_p16_pretrain/dino_xcit_small_12_p16_pretrain.pth",
@@ -113,7 +115,9 @@ def dino_xcit_small_12_p8(pretrained=True, **kwargs):
     """
     XCiT-Small-12/8 pre-trained with DINO.
     """
-    model = torch.hub.load('facebookresearch/xcit:main', "xcit_small_12_p8", num_classes=0, **kwargs)
+    model = torch.hub.load(
+        "facebookresearch/xcit:main", "xcit_small_12_p8", num_classes=0, **kwargs
+    )
     if pretrained:
         state_dict = torch.hub.load_state_dict_from_url(
             url="https://dl.fbaipublicfiles.com/dino/dino_xcit_small_12_p8_pretrain/dino_xcit_small_12_p8_pretrain.pth",
@@ -127,7 +131,9 @@ def dino_xcit_medium_24_p16(pretrained=True, **kwargs):
     """
     XCiT-Medium-24/16 pre-trained with DINO.
     """
-    model = torch.hub.load('facebookresearch/xcit:main', "xcit_medium_24_p16", num_classes=0, **kwargs)
+    model = torch.hub.load(
+        "facebookresearch/xcit:main", "xcit_medium_24_p16", num_classes=0, **kwargs
+    )
     if pretrained:
         state_dict = torch.hub.load_state_dict_from_url(
             url="https://dl.fbaipublicfiles.com/dino/dino_xcit_medium_24_p16_pretrain/dino_xcit_medium_24_p16_pretrain.pth",
@@ -141,7 +147,9 @@ def dino_xcit_medium_24_p8(pretrained=True, **kwargs):
     """
     XCiT-Medium-24/8 pre-trained with DINO.
     """
-    model = torch.hub.load('facebookresearch/xcit:main', "xcit_medium_24_p8", num_classes=0, **kwargs)
+    model = torch.hub.load(
+        "facebookresearch/xcit:main", "xcit_medium_24_p8", num_classes=0, **kwargs
+    )
     if pretrained:
         state_dict = torch.hub.load_state_dict_from_url(
             url="https://dl.fbaipublicfiles.com/dino/dino_xcit_medium_24_p8_pretrain/dino_xcit_medium_24_p8_pretrain.pth",
