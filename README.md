@@ -44,15 +44,6 @@ pip install pycocotools
 pip install -r requirements.txt
 ```
 
-And then, install [DINO](https://arxiv.org/pdf/2104.14294.pdf) using the following commands:
-
-```bash
-git clone https://github.com/facebookresearch/dino.git
-cd dino; 
-touch __init__.py
-echo -e "import sys\nfrom os.path import dirname, join\nsys.path.insert(0, join(dirname(__file__), '.'))" >> __init__.py; cd ../;
-```
-
 ## 2a. Training code
 
 ### Dataset details
