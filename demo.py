@@ -29,6 +29,8 @@ from PIL import Image
 from model import PeekabooModel
 from misc import load_config
 from torchvision import transforms as T
+from torchinfo import summary
+
 
 NORMALIZE = T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
 
@@ -80,6 +82,9 @@ if __name__ == "__main__":
     model.decoder_load_weights(args.model_weights)
     model.eval()
     print(f"Model {args.model_weights} loaded correctly.")
+
+    # Print params
+    summary(model, input_size=(1, 3, 224, 224))
 
     # Load the image
     with open(args.img_path, "rb") as f:
