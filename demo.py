@@ -85,6 +85,7 @@ if __name__ == "__main__":
 
     # Print params
     summary(model, input_size=(1, 3, 224, 224))
+    print(f"\n")
 
     # Load the image
     with open(args.img_path, "rb") as f:
@@ -98,12 +99,14 @@ if __name__ == "__main__":
     # Forward step
     with torch.no_grad():
         preds = model(inputs, for_eval=True)
+        print(f"Shape of output is {preds.shape}")
 
     sigmoid = nn.Sigmoid()
     h, w = img_t.shape[-2:]
     preds_up = F.interpolate(
         preds, scale_factor=model.vit_patch_size, mode="bilinear", align_corners=False
     )[..., :h, :w]
+    print(f"Shape of output after interpolation is {preds_up.shape}")
     preds_up = (sigmoid(preds_up.detach()) > 0.5).squeeze(0).float()
 
     plt.figure()
