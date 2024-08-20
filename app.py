@@ -108,7 +108,7 @@ if __name__ == "__main__":
         gr.components.Image(type="filepath", label="Input Image"),
         gr.components.Image(type="numpy", label="Predicted Output"),
         examples=[
-            "./data/examples/octopus.jpeg"
+            "./data/examples/octopus.jpeg",
             "./data/examples/godzillaxkong.jpeg",
             "./data/examples/avengers.jpeg",
             "./data/examples/dinosaur.jpeg",
