@@ -296,6 +296,12 @@
 			</tr>
 		</table>
 	</center>
+	
+	<br>
+
+	<strong>TL;DR</strong>: A segmentation model with zero-shot generalization to unfamiliar images and objects that are small, reflective or under poor 
+	illumination without the need for additional training. Our approach aims to explicitly model contextual relationship among 
+	pixels in a self-supervised procedure through image masking for unsupervised object localization.
 
 	<br>
 	<hr>
@@ -316,16 +322,16 @@
 					we believe our work is a significant step forward in solving 
 					unsupervised object localization in the aforementioned scenarios. 
 					There has been some concurrent work on this subject as well. 
-					Specifically, see <a href="https://valeoai.github.io/blog/publications/found/">FOUND</a>.
+					Specifically, see <a href="https://github.com/valeoai/FOUND">FOUND</a>.
 				</i>
 
 				<br><br>
 
 				<i> 
-					Our approach aims to explicitly model contextual relationship among pixels through image masking for 
-					unsupervised object localization. In a self-supervised procedure (i.e. pretext task) without any additional 
-					training (i.e. downstream task), context-based representation learning is done at both the pixel-level by 
-					making predictions on masked images and at shape-level by matching the predictions of the masked input to the unmasked one.
+					Our approach aims to explicitly model contextual relationship among pixels through image masking 
+					for unsupervised object localization. In a self-supervised procedure (i.e. pretext task) without any additional training 
+					(i.e. downstream task), context-based representation learning is done at both the pixel-level by making predictions on masked 
+					images and at shape-level by matching the predictions of the masked input to the unmasked one.
 				</i>
 
 				<br><br>
@@ -337,9 +343,49 @@
 
 				<br><br>
 
-				<i>Do enjoy our results, and definitely <a href="https://github.com/hasibzunair/peekaboo?tab=readme-ov-file#4-demo">try the model</a> yourself</i>!
+				<i>Do enjoy our results, and definitely <a href="https://huggingface.co/spaces/hasibzunair/peekaboo-demo">try the model</a> yourself</i>!
 	  		</span>
 	  	</div>
+
+	<br>
+	<hr>
+
+	<center><h1>Results on unfamiliar images and objects</h1></center>
+	We show some results of Peekaboo on unfamiliar objects that are out-of-domain of ImageNet and DUT-TR, of different scales and shapes which 
+	are correctly localized. Specifically, octopus, dinosaurs and spaceships are not present in ImageNet/DUT-TR, Peekaboo can still detect them. 
+	These results show the ability of Peekaboo to discover multiple and diverse objects, basically which "are not background".
+
+	<br><br>
+
+	<table align=center width=400px>
+			<td align=center width=400px>
+				<center>
+					<td><img class="round" style="width:1000px" src="./resources/images.png"/></td>
+				</center>
+			</td>
+		</tr>
+	</table>
+
+	<br>
+	<hr>
+
+	<center><h1>Try the Interactive Demo</h1></center>
+	
+	<table align=center width=400px>
+		<tr>
+			<td align=center width=400px>
+			<center>
+				<td><a href='https://huggingface.co/spaces/hasibzunair/peekaboo-demo'><img class="round" style="width:800px" src="./resources/spaces.png"/></a></td>
+			</center>
+	  </tr>
+  </table>
+
+  	<table align=center width=100px>
+		<tr>
+			<center> <br>
+	  		<span style="font-size:28px"><a href='https://huggingface.co/spaces/hasibzunair/peekaboo-demo'>[🤗 Spaces]</a> Demo</span></span><i></i>
+			</center></tr>
+	</table>
 
 	<br>
 	<hr>
@@ -394,10 +440,17 @@
 		<tr>
 			<td align=center width=400px>
 				<center>
-					<td><img class="round" style="width:850px" src="./resources/figure.jpg"/></td>
+					<td><a href='https://github.com/hasibzunair/peekaboo'><img class="round" style="width:800px" src="./resources/figure.jpg"/></a></td>
 				</center>
 			</td>
 		</tr>
+	</table>
+
+	<table align=center width=100px>
+		<tr>
+			<center> <br>
+	  		<span style="font-size:28px"><a href='https://github.com/hasibzunair/peekaboo'>[GitHub]</a> Code</span></span><i></i>
+			</center></tr>
 	</table>
 
 	<br>
@@ -406,7 +459,7 @@
 	<table align=center width=500px>
 		<center><h1>Paper and Supplementary Material</h1></center>
 		<tr>
-			<td><a href=""><img class="layered-paper-big" style="height:175px" src="./resources/paper.png"/></a></td>
+			<td><a href="https://arxiv.org/abs/2407.17628"><img class="layered-paper-big" style="height:175px" src="./resources/paper.png"/></a></td>
 			<td><span style="font-size:14pt">Hasib Zunair and A. Ben Hamza<br>
 				<b>PEEKABOO: Hiding Parts of an Image for Unsupervised Object Localization.</b><br>
 				In BMVC, 2024.<br>
