@@ -112,7 +112,7 @@ if __name__ == "__main__":
             "./data/examples/godzillaxkong.jpeg",
             "./data/examples/avengers.jpeg",
             "./data/examples/dinosaur.jpeg",
-            "./data/examples/chitauri.jpeg"
+            "./data/examples/chitauri.jpeg",
         ],
         title=title,
         description=description,

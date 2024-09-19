@@ -87,7 +87,7 @@ def train_model(
     #                      Setup loss, optimizer and scheduler                     #
     #                                                                              #
     ################################################################################
-    
+
     criterion = nn.BCEWithLogitsLoss()
     criterion_mse = nn.MSELoss()
     optimizer = torch.optim.AdamW(model.decoder.parameters(), lr=config.training["lr0"])
