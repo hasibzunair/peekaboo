@@ -1,7 +1,7 @@
 # Code for Peekaboo
 # Author: Hasib Zunair
 
-"""Run Peekaboo model on video feed"""
+"""Infer Peekaboo model on video feed from webcam"""
 
 import time
 import torch
@@ -17,7 +17,7 @@ from torchinfo import summary
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Run Peekaboo model on video feed",
+        description="Infer Peekaboo model on video feed from webcam",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
