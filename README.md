@@ -123,11 +123,13 @@ Additional pre-trained models of different configutations of Peekaboo can be fou
 
 ## 4. Demo
 
-We provide prediction demos of our models. The following applies and visualizes our method on a single image.
+We provide prediction demos of our models. The following applies and visualizes our method on a single image as well as on live video feed from webcam.
 
 ```bash
 # infer on one image
 python demo.py
+# infer on webcam
+python video_demo.py
 ```
 
 If you want to test on your own images, you can run following that builds a gradio app that serves predictions locally.
