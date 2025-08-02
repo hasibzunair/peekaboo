@@ -127,7 +127,7 @@ We provide prediction demos of our model. The following applies and visualizes P
 
 ```bash
 # infer on one image
-python demo.py
+python image_demo.py
 # infer on webcam video feed
 python video_demo.py
 ```

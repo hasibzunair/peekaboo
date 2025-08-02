@@ -21,9 +21,11 @@
 import os
 import torch
 import argparse
+import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 from PIL import Image
 from model import PeekabooModel
@@ -31,6 +33,7 @@ from misc import load_config
 from torchvision import transforms as T
 from torchinfo import summary
 
+from misc import get_bbox_from_segmentation_labels
 
 NORMALIZE = T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
 
@@ -91,8 +94,10 @@ if __name__ == "__main__":
     with open(args.img_path, "rb") as f:
         img = Image.open(f)
         img = img.convert("RGB")
+        original_size = img.size  # (w, h)
 
-        t = T.Compose([T.ToTensor(), NORMALIZE])
+        # Preprocess
+        t = T.Compose([T.Resize((224, 224)), T.ToTensor(), NORMALIZE])
         img_t = t(img)[None, :, :, :]
         inputs = img_t.to(device)
 
@@ -103,17 +108,42 @@ if __name__ == "__main__":
 
     sigmoid = nn.Sigmoid()
     h, w = img_t.shape[-2:]
+    orig_h, orig_w = original_size[1], original_size[0]
     preds_up = F.interpolate(
-        preds, scale_factor=model.vit_patch_size, mode="bilinear", align_corners=False
-    )[..., :h, :w]
+        preds, size=(orig_h, orig_w), mode="bilinear", align_corners=False
+    )
     print(f"Shape of output after interpolation is {preds_up.shape}")
     preds_up = (sigmoid(preds_up.detach()) > 0.5).squeeze(0).float()
 
-    plt.figure()
-    plt.imshow(img)
-    plt.imshow(
-        preds_up.cpu().squeeze().numpy(), "gray", interpolation="none", alpha=0.5
+    # Get segmentation mask
+    pred_bin_mask = preds_up.cpu().squeeze().numpy().astype(np.uint8)
+    initial_image_size = img.size[::-1]
+    scales = [
+        initial_image_size[0] / pred_bin_mask.shape[0],
+        initial_image_size[1] / pred_bin_mask.shape[1],
+    ]
+
+    # Get bounding box for single object discovery
+    pred_bbox = get_bbox_from_segmentation_labels(
+        pred_bin_mask, initial_image_size, scales
     )
+    print(f"Predicted bounding box: {pred_bbox}")
+
+    # Plot mask and box in the image
+    fig, ax = plt.subplots()
+    ax.imshow(img)
+    ax.imshow(pred_bin_mask, "gray", interpolation="none", alpha=0.5)
+
+    rect = patches.Rectangle(
+        (pred_bbox[0], pred_bbox[1]),
+        pred_bbox[2] - pred_bbox[0],
+        pred_bbox[3] - pred_bbox[1],
+        linewidth=2,
+        edgecolor="b",
+        facecolor="none",
+    )
+    ax.add_patch(rect)
+
     plt.axis("off")
     img_name = args.img_path
     img_name = img_name.split("/")[-1].split(".")[0]
