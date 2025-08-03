@@ -16,6 +16,10 @@ A segmentation model with zero-shot generalization to unfamiliar images and obje
 
 ![Predictions of In The Wild Images](./media/images.png)
 
+## Updates
+
+- \[2025.08.1\] PeekabooSAM2 (WIP)
+
 ## 1. Specification of dependencies
 
 This code requires Python 3.8 and CUDA 11.2. Clone the project repository, then create and activate the following conda envrionment.
@@ -151,22 +155,6 @@ A web demo is available [here](https://huggingface.co/spaces/hasibzunair/peekabo
     year={2024}
   }
 ```
-
-## Project Notes
-
-<details><summary>Click to view</summary>
-<br>
-
-**[Mar 18, 2024]** Infer on image folders.
-
-```python
-# infer on folder of images
-python visualize_outputs.py --model-weights outputs/msl_a1.5_b1_g1_reg4-MSL-DUTS-TR-vit_small8/decoder_weights_niter500.pt --img-folder ./datasets_local/DUTS-TR/DUTS-TR-Image/ --output-dir outputs/visualizations/msl_masks
-```
-
-**[Nov 10, 2023]** Reproduced FOUND results.
-
-**[Nov 10, 2023]** Added project notes section.
 
 </details>
 
