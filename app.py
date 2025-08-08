@@ -8,10 +8,12 @@ import codecs
 import numpy as np
 import cv2
 
-from PIL import Image
+from PIL import Image, ImageDraw
 from model import PeekabooModel
 from misc import load_config
 from torchvision import transforms as T
+
+from misc import get_bbox_from_segmentation_labels
 
 NORMALIZE = T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
 
@@ -21,10 +23,10 @@ def inference(img_path):
     with open(img_path, "rb") as f:
         img = Image.open(f)
         img = img.convert("RGB")
-        img_np = np.array(img)
+        original_size = img.size  # (w, h)
 
         # Preprocess
-        t = T.Compose([T.ToTensor(), NORMALIZE])
+        t = T.Compose([T.Resize((224, 224)), T.ToTensor(), NORMALIZE])
         img_t = t(img)[None, :, :, :]
         inputs = img_t.to(device)
 
@@ -36,21 +38,53 @@ def inference(img_path):
 
     sigmoid = nn.Sigmoid()
     h, w = img_t.shape[-2:]
+    orig_h, orig_w = original_size[1], original_size[0]
     preds_up = F.interpolate(
-        preds,
-        scale_factor=model.vit_patch_size,
-        mode="bilinear",
-        align_corners=False,
-    )[..., :h, :w]
+        preds, size=(orig_h, orig_w), mode="bilinear", align_corners=False
+    )
+    print(f"Shape of output after interpolation is {preds_up.shape}")
     preds_up = (sigmoid(preds_up.detach()) > 0.5).squeeze(0).float()
-    preds_up = preds_up.cpu().squeeze().numpy()
 
-    # Overlay predicted mask with input image
-    preds_up_np = (preds_up / np.max(preds_up) * 255).astype(np.uint8)
-    preds_up_np_3d = np.stack([preds_up_np, preds_up_np, preds_up_np], axis=-1)
-    combined_image = cv2.addWeighted(img_np, 0.5, preds_up_np_3d, 0.5, 0)
-    print(f"Output shape is {combined_image.shape}")
-    return combined_image
+    # Get segmentation mask
+    pred_bin_mask = preds_up.cpu().squeeze().numpy().astype(np.uint8)
+    initial_image_size = img.size[::-1]
+    scales = [
+        initial_image_size[0] / pred_bin_mask.shape[0],
+        initial_image_size[1] / pred_bin_mask.shape[1],
+    ]
+
+    # Get bounding box for single object discovery
+    pred_bbox = get_bbox_from_segmentation_labels(
+        pred_bin_mask, initial_image_size, scales
+    )
+    print(f"Predicted bounding box: {pred_bbox}")
+
+    # Plot mask and box in the image
+    img_draw = img.convert("RGBA")
+
+    # Create mask overlay with proper alpha channel
+    alpha = (pred_bin_mask * 100).astype(np.uint8)
+    color = (255, 0, 0, 0)
+
+    color_mask = Image.fromarray(np.stack([
+        np.full_like(alpha, color[0]),
+        np.full_like(alpha, color[1]),
+        np.full_like(alpha, color[2]),
+        alpha,
+    ], axis=-1), mode="RGBA")
+
+    # Composite red mask over the image
+    img_draw = Image.alpha_composite(img_draw, color_mask)
+
+    # Draw bounding box
+    draw = ImageDraw.Draw(img_draw)
+    draw.rectangle(
+        [(pred_bbox[0], pred_bbox[1]), (pred_bbox[2], pred_bbox[3])],
+        outline=(255, 0, 0, 255),
+        width=3
+    )
+    img_draw = img_draw.convert("RGB")
+    return img_draw
 
 
 if __name__ == "__main__":
