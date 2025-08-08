@@ -24,10 +24,8 @@ import argparse
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 
-from PIL import Image
+from PIL import Image, ImageDraw
 from model import PeekabooModel
 from misc import load_config
 from torchvision import transforms as T
@@ -130,27 +128,32 @@ if __name__ == "__main__":
     print(f"Predicted bounding box: {pred_bbox}")
 
     # Plot mask and box in the image
-    fig, ax = plt.subplots()
-    ax.imshow(img)
-    ax.imshow(pred_bin_mask, "gray", interpolation="none", alpha=0.5)
+    img_draw = img.convert("RGBA")  # Ensure RGBA mode for alpha composite
 
-    rect = patches.Rectangle(
-        (pred_bbox[0], pred_bbox[1]),
-        pred_bbox[2] - pred_bbox[0],
-        pred_bbox[3] - pred_bbox[1],
-        linewidth=2,
-        edgecolor="b",
-        facecolor="none",
-    )
-    ax.add_patch(rect)
+    # Create mask overlay with proper alpha channel
+    alpha = (pred_bin_mask * 100).astype(np.uint8)  # semi-transparent alpha
+    color = (255, 0, 0, 0)  # red color base with 0 alpha
 
-    plt.axis("off")
-    img_name = args.img_path
-    img_name = img_name.split("/")[-1].split(".")[0]
-    plt.savefig(
-        os.path.join(args.output_dir, f"{img_name}-peekaboo.png"),
-        bbox_inches="tight",
-        pad_inches=0,
+    color_mask = Image.fromarray(np.stack([
+        np.full_like(alpha, color[0]),
+        np.full_like(alpha, color[1]),
+        np.full_like(alpha, color[2]),
+        alpha,
+    ], axis=-1), mode="RGBA")
+
+    # Composite red mask over the image
+    img_draw = Image.alpha_composite(img_draw, color_mask)
+
+    # Draw bounding box
+    draw = ImageDraw.Draw(img_draw)
+    draw.rectangle(
+        [(pred_bbox[0], pred_bbox[1]), (pred_bbox[2], pred_bbox[3])],
+        outline=(0, 0, 255, 255),
+        width=3
     )
-    plt.close()
-    print(f"Saved model prediction.")
+
+    # Save final image
+    img_name = args.img_path.split("/")[-1].split(".")[0]
+    save_path = os.path.join(args.output_dir, f"{img_name}-peekaboo.png")
+    img_draw.convert("RGB").save(save_path)
+    print(f"Saved model prediction at {save_path}")

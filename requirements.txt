@@ -11,3 +11,4 @@ scipy==1.7.3
 pytest==7.4.0
 torchinfo==1.8.0
 pyyaml==6.0.2
+gradio==5.13.1
