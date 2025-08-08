@@ -18,7 +18,7 @@ A segmentation model with zero-shot generalization to unfamiliar images and obje
 
 ## Updates
 
-- \[2025.08.1\] PeekabooSAM2 (WIP)
+- \[2025.08.1\] Track foreground object in a video (WIP)
 
 ## 1. Specification of dependencies
 
