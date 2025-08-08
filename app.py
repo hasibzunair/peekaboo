@@ -66,12 +66,18 @@ def inference(img_path):
     alpha = (pred_bin_mask * 100).astype(np.uint8)
     color = (255, 0, 0, 0)
 
-    color_mask = Image.fromarray(np.stack([
-        np.full_like(alpha, color[0]),
-        np.full_like(alpha, color[1]),
-        np.full_like(alpha, color[2]),
-        alpha,
-    ], axis=-1), mode="RGBA")
+    color_mask = Image.fromarray(
+        np.stack(
+            [
+                np.full_like(alpha, color[0]),
+                np.full_like(alpha, color[1]),
+                np.full_like(alpha, color[2]),
+                alpha,
+            ],
+            axis=-1,
+        ),
+        mode="RGBA",
+    )
 
     # Composite red mask over the image
     img_draw = Image.alpha_composite(img_draw, color_mask)
@@ -81,7 +87,7 @@ def inference(img_path):
     draw.rectangle(
         [(pred_bbox[0], pred_bbox[1]), (pred_bbox[2], pred_bbox[3])],
         outline=(255, 0, 0, 255),
-        width=3
+        width=3,
     )
     img_draw = img_draw.convert("RGB")
     return img_draw
