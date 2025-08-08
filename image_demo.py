@@ -128,11 +128,11 @@ if __name__ == "__main__":
     print(f"Predicted bounding box: {pred_bbox}")
 
     # Plot mask and box in the image
-    img_draw = img.convert("RGBA")  # Ensure RGBA mode for alpha composite
+    img_draw = img.convert("RGBA")
 
     # Create mask overlay with proper alpha channel
-    alpha = (pred_bin_mask * 100).astype(np.uint8)  # semi-transparent alpha
-    color = (255, 0, 0, 0)  # red color base with 0 alpha
+    alpha = (pred_bin_mask * 100).astype(np.uint8)
+    color = (255, 0, 0, 0)
 
     color_mask = Image.fromarray(np.stack([
         np.full_like(alpha, color[0]),
@@ -148,7 +148,7 @@ if __name__ == "__main__":
     draw = ImageDraw.Draw(img_draw)
     draw.rectangle(
         [(pred_bbox[0], pred_bbox[1]), (pred_bbox[2], pred_bbox[3])],
-        outline=(0, 0, 255, 255),
+        outline=(255, 0, 0, 255),
         width=3
     )
 
