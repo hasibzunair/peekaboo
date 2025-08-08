@@ -89,7 +89,7 @@ def inference(img_path):
         outline=(255, 0, 0, 255),
         width=3,
     )
-    img_draw = img_draw.convert("RGB")
+    img_draw = np.array(img_draw.convert("RGB"))
     return img_draw
 
 
@@ -144,9 +144,9 @@ if __name__ == "__main__":
     article = "<p style='text-align: center'><a href='https://arxiv.org/abs/2407.17628' target='_blank'>PEEKABOO: Hiding Parts of an Image for Unsupervised Object Localization</a> | <a href='https://github.com/hasibzunair/peekaboo' target='_blank'>Github</a></p>"
 
     gr.Interface(
-        inference,
-        gr.components.Image(type="filepath", label="Input Image"),
-        gr.components.Image(type="numpy", label="Predicted Output"),
+        fn=inference,
+        inputs=gr.Image(type="filepath", label="Input Image"),
+        outputs=gr.Image(type="numpy", label="Predicted Output"),
         examples=[
             "./data/examples/octopus.jpeg",
             "./data/examples/godzillaxkong.jpeg",
@@ -157,6 +157,4 @@ if __name__ == "__main__":
         title=title,
         description=description,
         article=article,
-        allow_flagging=False,
-        analytics_enabled=False,
     ).launch()
