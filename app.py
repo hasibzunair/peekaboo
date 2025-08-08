@@ -87,7 +87,7 @@ def inference(img_path):
     draw.rectangle(
         [(pred_bbox[0], pred_bbox[1]), (pred_bbox[2], pred_bbox[3])],
         outline=(255, 0, 0, 255),
-        width=3,
+        width=2,
     )
     img_draw = np.array(img_draw.convert("RGB"))
     return img_draw
