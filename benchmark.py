@@ -9,6 +9,7 @@ import argparse
 import numpy as np
 from PIL import Image
 from torchvision import transforms as T
+from tqdm import tqdm
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -22,7 +23,7 @@ CUDA_VISIBLE_DEVICES=2 PYTHONPATH=. python benchmark.py \
     --img-path data/examples/doggo.jpg \
     --model-weights data/weights/peekaboo_decoder_weights_niter500.pt \
     --config configs/peekaboo_DUTS-TR.yaml \
-    --batch-size 512
+    --batch-size 16
 """
 
 
@@ -116,7 +117,7 @@ def benchmark_fn(fn, *fn_args, device="cuda", n_warmup=10, n_iters=50):
     if device == "cuda":
         torch.cuda.synchronize()
     start = time.time()
-    for _ in range(n_iters):
+    for _ in tqdm(range(n_iters)):
         _ = fn(*fn_args)
     if device == "cuda":
         torch.cuda.synchronize()
@@ -162,7 +163,7 @@ def main(args):
     )
 
     print(f"\nBatch size: {args.batch_size}")
-    print(f"\Image size: {orig_sizes[0]}")
+    print(f"Image size: {orig_sizes[0]}")
     print(f"Segmentation mask throughput: {mask_ips:.2f} images/sec")
     print(f"Bounding box throughput (end-to-end): {bbox_ips:.2f} images/sec\n")
 
