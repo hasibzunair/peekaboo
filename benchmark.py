@@ -14,10 +14,10 @@ NORMALIZE = T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
 
 """
 CUDA_VISIBLE_DEVICES=2 PYTHONPATH=. python benchmark.py \
-    --img-path data/examples/octopus.jpeg \
+    --img-path data/examples/doggo.jpg \
     --model-weights data/weights/peekaboo_decoder_weights_niter500.pt \
     --config configs/peekaboo_DUTS-TR.yaml \
-    --batch-size 64
+    --batch-size 512
 """
 
 
@@ -157,6 +157,7 @@ def main(args):
     )
 
     print(f"\nBatch size: {args.batch_size}")
+    print(f"\Image size: {orig_sizes[0]}")
     print(f"Segmentation mask throughput: {mask_ips:.2f} images/sec")
     print(f"Bounding box throughput (end-to-end): {bbox_ips:.2f} images/sec\n")
 
