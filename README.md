@@ -41,10 +41,10 @@ Or, you can also create a fresh environment and install the project requirements
 git clone https://github.com/hasibzunair/peekaboo
 cd peekaboo
 # create fresh env
-conda create -n peekaboo python=3.8     
+conda create -n peekaboo python=3.10 
 conda activate peekaboo
 # example of pytorch installation
-pip install torch===1.8.1 torchvision==0.9.1 -f https://download.pytorch.org/whl/torch_stable.html
+pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu124
 pip install pycocotools
 # install dependencies
 pip install -r requirements.txt
