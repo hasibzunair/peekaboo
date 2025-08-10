@@ -1,3 +1,8 @@
+# Code for Peekaboo
+# Author: Hasib Zunair
+
+"""Benchmark code for Peekaboo"""
+
 import time
 import torch
 import argparse
