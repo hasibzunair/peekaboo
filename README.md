@@ -18,7 +18,7 @@ A segmentation model with zero-shot generalization to unfamiliar images and obje
 
 ## Updates
 
-- \[2025.08.1\] Track foreground object in a video (WIP)
+- \[2024.07.19\] Peekaboo is accepted in [BMVC'2024](https://bmvc2024.org/).
 
 ## 1. Specification of dependencies
 
