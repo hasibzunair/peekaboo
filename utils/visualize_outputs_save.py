@@ -17,10 +17,11 @@
 # limitations under the License.
 
 """Visualize outputs and save masks of both model predictions and ground truths.
+
 Usage:
 python ./utils/visualize_outputs.py --model-weights outputs/msl_a1.5_b1_g1_reg4-MSL-DUTS-TR-vit_small8/decoder_weights_niter500.pt --img-folder ./datasets_local/ECSSD/images/ --output-dir outputs/visualizations/msl_a1.5_b1_g1_reg4-MSL-DUTS-TR-vit_small8_ECSSD
 
-OR,
+OR run,
 python visualize_outputs.py --model-weights outputs/msl_a1.5_b1_g1_reg4-MSL-DUTS-TR-vit_small8/decoder_weights_niter500.pt --img-folder ./datasets_local/DUTS-TR/DUTS-TR-Image/ --output-dir outputs/visualizations/msl_masks
 """
 
