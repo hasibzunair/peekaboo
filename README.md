@@ -22,7 +22,7 @@ A segmentation model with zero-shot generalization to unfamiliar images and obje
 
 ## 1. Specification of dependencies
 
-This code requires Python 3.8 and CUDA 11.2. Clone the project repository, then create and activate the following conda envrionment.
+This code requires Python 3.10 and CUDA 12.4. Clone the project repository, then create and activate the following conda envrionment.
 
 ```bash
 # clone repo
