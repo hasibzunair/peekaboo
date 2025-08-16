@@ -154,8 +154,13 @@ if __name__ == "__main__":
             result_image = img_array.copy()
 
             # Extract bounding box coordinates
-            x1, y1, x2, y2 = int(pred_bbox[0]), int(pred_bbox[1]), int(pred_bbox[2]), int(pred_bbox[3])
-            
+            x1, y1, x2, y2 = (
+                int(pred_bbox[0]),
+                int(pred_bbox[1]),
+                int(pred_bbox[2]),
+                int(pred_bbox[3]),
+            )
+
             # Ensure bounding box is within image bounds
             x1 = max(0, x1)
             y1 = max(0, y1)
@@ -168,16 +173,13 @@ if __name__ == "__main__":
 
             # Create overlay for the bbox region only
             overlay_region = bbox_region.copy()
-            
+
             # Apply red mask where prediction is positive within the bbox
             mask_indices = bbox_mask > 0
             if np.any(mask_indices):
                 overlay_region[mask_indices] = [255, 0, 0]  # Red color
+                blended_region = cv2.addWeighted(bbox_region, 1, overlay_region, 0.4, 0)
 
-                # Blend the bbox region with alpha blending
-                alpha = 0.4
-                blended_region = cv2.addWeighted(bbox_region, 1 - alpha, overlay_region, alpha, 0)
-                
                 # Place the blended region back into the result image
                 result_image[y1:y2, x1:x2] = blended_region
 
