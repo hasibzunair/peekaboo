@@ -1,24 +1,41 @@
 # Code for Peekaboo
 # Author: Hasib Zunair
 
-"""Infer Peekaboo model on video feed from webcam"""
+"""Visualize model predictions on video.
 
-import time
-import torch
+Usage
+CUDA_VISIBLE_DEVICES=1 python video_demo.py --video-path ./data/examples/videos/person_2.mp4 --output-dir ./outputs/
+"""
+
+import os
 import cv2
+import torch
 import argparse
+import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
-import numpy as np
+
+from PIL import Image, ImageDraw
 from model import PeekabooModel
 from misc import load_config
 from torchvision import transforms as T
 from torchinfo import summary
 
+from misc import get_bbox_from_segmentation_labels
+
+NORMALIZE = T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Infer Peekaboo model on video feed from webcam",
+        description="Video Demo of Peekaboo",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+
+    parser.add_argument(
+        "--video-path",
+        type=str,
+        default="data/examples/video.mp4",
+        help="Video path.",
     )
     parser.add_argument(
         "--model-weights",
@@ -30,7 +47,16 @@ if __name__ == "__main__":
         type=str,
         default="configs/peekaboo_DUTS-TR.yaml",
     )
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default="outputs",
+    )
     args = parser.parse_args()
+
+    # Saving dir
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
 
     # Configuration
     config, _ = load_config(args.config)
@@ -43,91 +69,119 @@ if __name__ == "__main__":
         vit_patch_size=config.model["patch_size"],
         enc_type_feats=config.peekaboo["feats"],
     )
+    # Load weights
     model.decoder_load_weights(args.model_weights)
     model.eval()
-    model.to(device)
     print(f"Model {args.model_weights} loaded correctly.")
 
     # Print params
     summary(model, input_size=(1, 3, 224, 224))
     print(f"\n")
 
-    # Predefine transformations and sigmoid
-    transform = T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+    # Open video
+    cap = cv2.VideoCapture(args.video_path)
+    if not cap.isOpened():
+        raise ValueError(f"Could not open video file: {args.video_path}")
+
+    # Get video properties
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+    print(f"Video properties: {width}x{height} @ {fps}fps, {total_frames} frames")
+
+    # Prepare output video
+    video_name = os.path.basename(args.video_path).split(".")[0]
+    output_path = os.path.join(args.output_dir, f"{video_name}-peekaboo.mp4")
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+
+    frame_count = 0
     sigmoid = nn.Sigmoid()
 
-    # Open video feed
-    cap = cv2.VideoCapture(0)
-    if not cap.isOpened():
-        print("Error: Could not open video feed.")
-        exit()
-    print("Press 'q' to exit.")
+    try:
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
 
-    # Variables for FPS calculation
-    prev_frame_time = 0
-    new_frame_time = 0
+            frame_count += 1
+            print(f"Processing frame {frame_count}/{total_frames}", end="\r")
 
-    # Process video frames
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            print("Error: Could not read frame.")
-            break
+            # Convert BGR to RGB
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            img = Image.fromarray(frame_rgb)
+            original_size = img.size  # (w, h)
 
-        # Preprocess the frame
-        resized_frame = cv2.resize(frame, (224, 224))
-        frame_rgb = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2RGB)
-        img_t = torch.from_numpy(frame_rgb).float().permute(2, 0, 1) / 255.0
-        img_t = transform(img_t).unsqueeze(0).to(device)
+            # Preprocess
+            t = T.Compose([T.Resize((224, 224)), T.ToTensor(), NORMALIZE])
+            img_t = t(img)[None, :, :, :]
+            inputs = img_t.to(device)
 
-        # Model inference
-        with torch.no_grad():
-            preds = model(img_t, for_eval=True)
-            print(f"Shape of model output is {preds.shape}")
+            # Forward step
+            with torch.no_grad():
+                preds = model(inputs, for_eval=True)
 
-        # Post process predictions
-        h, w = frame.shape[:2]
-        # no dynamic adjustments, resize outputs directly to match the frame
-        # size instead of scaling with intermediate patch sizes.
-        preds_up = F.interpolate(
-            preds, size=(h, w), mode="bilinear", align_corners=False
-        )
-        preds_up = (sigmoid(preds_up) > 0.5).squeeze(0).cpu().numpy()
+            orig_h, orig_w = original_size[1], original_size[0]
+            preds_up = F.interpolate(
+                preds, size=(orig_h, orig_w), mode="bilinear", align_corners=False
+            )
+            preds_up = (sigmoid(preds_up.detach()) > 0.5).squeeze(0).float()
 
-        # Create mask and blur background
-        mask = preds_up.squeeze(0).astype(np.uint8)
+            # Get segmentation mask
+            pred_bin_mask = preds_up.cpu().squeeze().numpy().astype(np.uint8)
 
-        # Blur the background
-        blurred_frame = cv2.GaussianBlur(frame, (51, 51), 0)
+            # Check if there is any predicted foreground
+            if pred_bin_mask.sum() == 0:
+                # No foreground detected, just save the original frame
+                out.write(frame)
+                continue
 
-        # Create foreground and background
-        background = cv2.bitwise_and(
-            blurred_frame, blurred_frame, mask=cv2.bitwise_not(mask)
-        )
-        foreground = cv2.bitwise_and(frame, frame, mask=mask)
+            initial_image_size = img.size[::-1]
+            scales = [
+                initial_image_size[0] / pred_bin_mask.shape[0],
+                initial_image_size[1] / pred_bin_mask.shape[1],
+            ]
 
-        # Combine blurred background with unblurred foreground
-        combined = cv2.add(background, foreground)
+            # Get bounding box for single object discovery
+            pred_bbox = get_bbox_from_segmentation_labels(
+                pred_bin_mask, initial_image_size, scales
+            )
 
-        # Calculate FPS
-        new_frame_time = time.time()
-        fps = 1 / (new_frame_time - prev_frame_time)
-        prev_frame_time = new_frame_time
+            # Create overlay with red mask
+            img_array = np.array(img)
+            overlay = img_array.copy()
 
-        # Display FPS on the frame
-        fps_text = f"FPS: {fps:.2f}"
-        cv2.putText(
-            combined, fps_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 127, 255), 2
-        )
+            # Apply red mask where prediction is positive
+            mask_indices = pred_bin_mask > 0
+            overlay[mask_indices] = [255, 0, 0]  # Red color
 
-        # Display the output
-        cv2.imshow("Peekaboo Predictions from Video Feed", combined)
-        print(f"Shape of output frame is {combined.shape}.\n")
+            # Blend with original image
+            alpha = 0.4
+            blended = cv2.addWeighted(img_array, 1 - alpha, overlay, alpha, 0)
 
-        # Exit on 'q' key
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            break
+            # Draw bounding box
+            cv2.rectangle(
+                blended,
+                (int(pred_bbox[0]), int(pred_bbox[1])),
+                (int(pred_bbox[2]), int(pred_bbox[3])),
+                (255, 0, 0),
+                2,
+            )
 
-    # Release resources
-    cap.release()
-    cv2.destroyAllWindows()
+            # Convert back to BGR for OpenCV
+            result_frame = cv2.cvtColor(blended, cv2.COLOR_RGB2BGR)
+
+            # Write frame to output video
+            out.write(result_frame)
+
+    except KeyboardInterrupt:
+        print("\nProcessing interrupted by user")
+    finally:
+        # Release everything
+        cap.release()
+        out.release()
+        cv2.destroyAllWindows()
+
+    print(f"\nVideo processing completed. Saved to: {output_path}")
