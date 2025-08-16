@@ -153,44 +153,26 @@ if __name__ == "__main__":
             img_array = np.array(img)
             result_image = img_array.copy()
 
-            # Extract bounding box coordinates
-            x1, y1, x2, y2 = (
-                int(pred_bbox[0]),
-                int(pred_bbox[1]),
-                int(pred_bbox[2]),
-                int(pred_bbox[3]),
-            )
+            # Create overlay for the entire image
+            overlay = np.zeros_like(img_array, dtype=np.uint8)
 
-            # Ensure bounding box is within image bounds
-            x1 = max(0, x1)
-            y1 = max(0, y1)
-            x2 = min(img_array.shape[1], x2)
-            y2 = min(img_array.shape[0], y2)
-
-            # Extract the region within the bounding box
-            bbox_region = img_array[y1:y2, x1:x2].copy()
-            bbox_mask = pred_bin_mask[y1:y2, x1:x2]
-
-            # Create overlay for the bbox region only
-            overlay_region = bbox_region.copy()
-
-            # Apply red mask where prediction is positive within the bbox
-            mask_indices = bbox_mask > 0
+            # Apply red mask where prediction is positive
+            mask_indices = pred_bin_mask > 0
             if np.any(mask_indices):
-                overlay_region[mask_indices] = [255, 0, 0]  # Red color
-                blended_region = cv2.addWeighted(bbox_region, 1, overlay_region, 0.4, 0)
+                overlay[mask_indices] = [255, 0, 0]  # Red color
 
-                # Place the blended region back into the result image
-                result_image[y1:y2, x1:x2] = blended_region
+                # Blend the entire image with alpha blending
+                alpha = 0.4
+                result_image = cv2.addWeighted(img_array, 1, overlay, alpha, 0)
 
-            # Draw bounding box
-            cv2.rectangle(
-                result_image,
-                (x1, y1),
-                (x2, y2),
-                (255, 0, 0),
-                2,
-            )
+                # Draw bounding box around the mask (calculate from actual mask pixels)
+                y_indices, x_indices = np.where(pred_bin_mask)
+                if y_indices.size > 0 and x_indices.size > 0:
+                    x_min, x_max = x_indices.min(), x_indices.max()
+                    y_min, y_max = y_indices.min(), y_indices.max()
+                    cv2.rectangle(
+                        result_image, (x_min, y_min), (x_max, y_max), (255, 0, 0), 2
+                    )
 
             # Convert back to BGR
             result_frame = cv2.cvtColor(result_image, cv2.COLOR_RGB2BGR)
