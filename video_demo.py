@@ -149,29 +149,49 @@ if __name__ == "__main__":
                 pred_bin_mask, initial_image_size, scales
             )
 
-            # Create overlay with red mask
+            # Start with the original image
             img_array = np.array(img)
-            overlay = img_array.copy()
+            result_image = img_array.copy()
 
-            # Apply red mask where prediction is positive
-            mask_indices = pred_bin_mask > 0
-            overlay[mask_indices] = [255, 0, 0]  # Red color
+            # Extract bounding box coordinates
+            x1, y1, x2, y2 = int(pred_bbox[0]), int(pred_bbox[1]), int(pred_bbox[2]), int(pred_bbox[3])
+            
+            # Ensure bounding box is within image bounds
+            x1 = max(0, x1)
+            y1 = max(0, y1)
+            x2 = min(img_array.shape[1], x2)
+            y2 = min(img_array.shape[0], y2)
 
-            # Blend with original image
-            alpha = 0.4
-            blended = cv2.addWeighted(img_array, 1 - alpha, overlay, alpha, 0)
+            # Extract the region within the bounding box
+            bbox_region = img_array[y1:y2, x1:x2].copy()
+            bbox_mask = pred_bin_mask[y1:y2, x1:x2]
+
+            # Create overlay for the bbox region only
+            overlay_region = bbox_region.copy()
+            
+            # Apply red mask where prediction is positive within the bbox
+            mask_indices = bbox_mask > 0
+            if np.any(mask_indices):
+                overlay_region[mask_indices] = [255, 0, 0]  # Red color
+
+                # Blend the bbox region with alpha blending
+                alpha = 0.4
+                blended_region = cv2.addWeighted(bbox_region, 1 - alpha, overlay_region, alpha, 0)
+                
+                # Place the blended region back into the result image
+                result_image[y1:y2, x1:x2] = blended_region
 
             # Draw bounding box
             cv2.rectangle(
-                blended,
-                (int(pred_bbox[0]), int(pred_bbox[1])),
-                (int(pred_bbox[2]), int(pred_bbox[3])),
+                result_image,
+                (x1, y1),
+                (x2, y2),
                 (255, 0, 0),
                 2,
             )
 
-            # Convert back to BGR for OpenCV
-            result_frame = cv2.cvtColor(blended, cv2.COLOR_RGB2BGR)
+            # Convert back to BGR
+            result_frame = cv2.cvtColor(result_image, cv2.COLOR_RGB2BGR)
 
             # Write frame to output video
             out.write(result_frame)

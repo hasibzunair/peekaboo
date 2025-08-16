@@ -4,7 +4,7 @@
 
 Hasib Zunair, A. Ben Hamza
 
-[[`Paper`](https://arxiv.org/abs/2407.17628)] [[`Project`](https://hasibzunair.github.io/peekaboo/)] [[`Demo`](#4-demo)] [[`BibTeX`](#5-citation)]
+[[`Paper`](https://arxiv.org/abs/2407.17628)] [[`Project`](https://hasibzunair.github.io/peekaboo/)] [[`Demo`](https://huggingface.co/spaces/hasibzunair/peekaboo-demo)] [[`BibTeX`](#5-citation)]
 
 This is official code for our **BMVC 2024 paper**:<br>
 [PEEKABOO: Hiding Parts of an Image for Unsupervised Object Localization](https://arxiv.org/abs/2407.17628)
@@ -132,8 +132,10 @@ We provide prediction demos of our model. The following applies and visualizes P
 ```bash
 # infer on one image
 python image_demo.py
-# infer on webcam video feed
+# infer on a video
 python video_demo.py
+# infer on webcam video feed
+python webcam_demo.py
 ```
 
 If you want to test on your own images, you can run following that builds a gradio app that serves predictions locally.
