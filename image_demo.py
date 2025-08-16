@@ -16,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Visualize model predictions"""
+"""Visualize model predictions on images."""
 
 import os
 import torch
@@ -37,7 +37,7 @@ NORMALIZE = T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Evaluation of Peekaboo",
+        description="Image Demo of Peekaboo",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
@@ -105,7 +105,6 @@ if __name__ == "__main__":
         print(f"Shape of output is {preds.shape}")
 
     sigmoid = nn.Sigmoid()
-    h, w = img_t.shape[-2:]
     orig_h, orig_w = original_size[1], original_size[0]
     preds_up = F.interpolate(
         preds, size=(orig_h, orig_w), mode="bilinear", align_corners=False
