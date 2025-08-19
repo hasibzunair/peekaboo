@@ -18,6 +18,7 @@ A segmentation model with zero-shot generalization to unfamiliar images and obje
 
 ## Updates
 
+- \[2025.08.19\] Release [Peekaboo 2](https://github.com/hasibzunair/peekaboo2)!
 - \[2024.07.19\] Peekaboo is accepted in [BMVC'2024](https://bmvc2024.org/).
 
 ## 1. Specification of dependencies
