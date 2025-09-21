@@ -15,7 +15,7 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 
-from PIL import Image, ImageDraw
+from PIL import Image
 from model import PeekabooModel
 from misc import load_config
 from torchvision import transforms as T
@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
     # Print params
     summary(model, input_size=(1, 3, 224, 224))
-    print(f"\n")
+    print("\n")
 
     # Open video
     cap = cv2.VideoCapture(args.video_path)
@@ -120,7 +120,7 @@ if __name__ == "__main__":
             inputs = img_t.to(device)
 
             # Forward step
-            with torch.no_grad():
+            with torch.inference_mode():
                 preds = model(inputs, for_eval=True)
 
             orig_h, orig_w = original_size[1], original_size[0]

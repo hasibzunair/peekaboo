@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     # Print params
     summary(model, input_size=(1, 3, 224, 224))
-    print(f"\n")
+    print("\n")
 
     # Predefine transformations and sigmoid
     transform = T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
@@ -81,7 +81,7 @@ if __name__ == "__main__":
         img_t = transform(img_t).unsqueeze(0).to(device)
 
         # Model inference
-        with torch.no_grad():
+        with torch.inference_mode():
             preds = model(img_t, for_eval=True)
             print(f"Shape of model output is {preds.shape}")
 
