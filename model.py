@@ -45,6 +45,16 @@ class PeekabooModel(nn.Module):
         ########## Decoder ##########
         self.previous_dim = self.initial_dim
         self.decoder = nn.Conv2d(self.previous_dim, 1, (1, 1))
+        self.depth_decoder = nn.Conv2d(self.previous_dim, 1, (1, 1))
+
+        # for later
+        # self.depth_decoder = nn.Sequential(
+        #         nn.Conv2d(self.previous_dim, 256, (3, 3), padding=1),
+        #         nn.ReLU(inplace=True),
+        #         nn.Conv2d(256, 128, (3, 3), padding=1),
+        #         nn.ReLU(inplace=True),
+        #         nn.Conv2d(128, 1, (1, 1))
+        #     )
 
     def _make_input_divisible(self, x: torch.Tensor) -> torch.Tensor:
         # From selfmask
@@ -89,7 +99,8 @@ class PeekabooModel(nn.Module):
             decoder = self.decoder
 
         logits = decoder(feats)
-        return logits
+        depth_pred = self.depth_decoder(feats)
+        return logits, depth_pred
 
     @torch.no_grad()
     def decoder_load_weights(self, weights_path):
@@ -105,10 +116,15 @@ class PeekabooModel(nn.Module):
         self.decoder.eval()
         self.decoder.to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
 
+        self.depth_decoder.load_state_dict(state_dict["depth_decoder"])
+        self.depth_decoder.eval()
+        self.depth_decoder.to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+
     @torch.no_grad()
     def decoder_save_weights(self, save_dir, n_iter):
         state_dict = {}
         state_dict["decoder"] = self.decoder.state_dict()
+        state_dict["depth_decoder"] = self.depth_decoder.state_dict()
         fname = os.path.join(save_dir, f"decoder_weights_niter{n_iter}.pt")
         torch.save(state_dict, fname)
         print(f"\n----" f"\nModel saved at {fname}")
@@ -178,3 +194,17 @@ def get_vit_encoder(vit_arch, vit_model, vit_patch_size, enc_type_feats):
         raise ValueError("Not implemented.")
 
     return vit_encoder, initial_dim, hook_features
+
+
+if __name__ == "__main__":
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = PeekabooModel(vit_model="dino", vit_arch="vit_small", vit_patch_size=8, enc_type_feats="k")
+    model.to(device)
+    model.eval()
+
+    # Random input
+    x = torch.randn(1, 3, 224, 224).to(device)
+    with torch.no_grad():
+        y_seg, y_depth = model(x, for_eval=True)
+    print("Input shape:", x.shape)
+    print("Output shape:", y_seg.shape, y_depth.shape)
